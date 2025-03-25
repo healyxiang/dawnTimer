@@ -1,0 +1,14 @@
+{
+  "server-component": {
+    "welcome": "Welcome"
+  },
+  "counter": {
+    "increment": "Increment",
+    "decrement": "Decrement"
+  },
+  "hero": {
+    "title": "De lang title",
+    "description": "Make creating avatars simple and fun! Just upload your photo, and using advanced AI technology, we will generate a variety of stylized avatars for you."
+  },
+  "test": "test in de"
+}
