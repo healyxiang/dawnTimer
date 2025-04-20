@@ -9,6 +9,7 @@ import {
 import { Fragment, useState, useEffect, useRef } from "react";
 import Link from "./Link";
 import headerNavLinks from "@/data/headerNavLinks";
+import { cn } from "@/lib/utils";
 
 const MobileNav = () => {
   const [navShow, setNavShow] = useState(false);
@@ -39,7 +40,7 @@ const MobileNav = () => {
       <button
         aria-label="Toggle Menu"
         onClick={onToggleNav}
-        className="sm:hidden"
+        className={cn("hidden", "sm:block")}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

@@ -10,5 +10,18 @@
     "title": "en lang title",
     "description": "Make creating avatars simple and fun! Just upload your photo, and using advanced AI technology, we will generate a variety of stylized avatars for you."
   },
-  "test": "test in en"
+  "test": "test in en",
+  "Timer": {
+    "start": "Start",
+    "stop": "Stop",
+    "reset": "Reset",
+    "add-task": "Add Task",
+    "task-placeholder": "Enter task name",
+    "pause": "Pause",
+    "addTask": "Add Task",
+    "tasks": "Tasks",
+    "pomodoro": "Pomodoro",
+    "shortBreak": "Short Break",
+    "longBreak": "Long Break"
+  }
 }

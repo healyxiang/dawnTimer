@@ -1,10 +1,10 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: "BootFast - Fast Bootstrapping for your Next.js project.",
-  author: "BootFast",
-  headerTitle: "BootFast",
+  title: "DawnLibrary - Master Your Time, Elevate Your Growth.",
+  author: "DawnLibrary",
+  headerTitle: "DawnLibrary",
   description:
-    "BootFast is a fast bootstrapping tool for your Next.js project.",
+    "Discover expert-curated resources on time management, personal growth, and productivity. Whether you're looking to optimize your daily routine, build better habits, or achieve your goals faster, DawnLibrary provides the tools and insights you need to transform your life. Start your journey to a more efficient and fulfilling future today",
   language: "en-us",
   theme: "system", // system, dark or light
   siteUrl: "https://bootfast.dev",

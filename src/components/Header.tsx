@@ -18,14 +18,14 @@ const Header = () => {
   }
 
   return (
-    <header className={cn(headerClass, "pl-8")}>
+    <header className={cn(headerClass, "px-8")}>
       <Link href="/" aria-label={siteMetadata.headerTitle}>
         <div className="flex items-center justify-between">
           {/* <div className="mr-3">
             <Image src={Logo} alt="Rednote Logo" width={40} height={40} />
           </div> */}
           {typeof siteMetadata.headerTitle === "string" ? (
-            <div className="hidden text-2xl font-semibold text-primary-500 sm:block">
+            <div className={cn("text-2xl font-semibold text-primary-500", "")}>
               {siteMetadata.headerTitle}
             </div>
           ) : (
@@ -35,15 +35,14 @@ const Header = () => {
       </Link>
       <div
         className={cn(
-          "flex ml-10 items-center space-x-4 leading-5 sm:space-x-6 grow",
-          "sm:justify-end"
+          "flex ml-10 items-center space-x-4 leading-5 space-x-6  grow justify-end",
+          "sm:space-x-3"
         )}
       >
         <div
           className={cn(
-            "no-scrollbar hidden items-center gap-x-4 overflow-x-auto pr-2 sm:flex",
-            // 'max-w-40 sm:space-x-6 md:max-w-72 lg:max-w-96',
-            "grow"
+            "no-scrollbar flex items-center grow gap-x-4 overflow-x-auto pr-2",
+            "sm:hidden"
           )}
         >
           {headerNavLinks
