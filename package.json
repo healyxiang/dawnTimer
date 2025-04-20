@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run prisma:generate && npm run build:content && next build",
     "start": "next start",
     "lint": "next lint",
+    "prisma:generate": "npx prisma generate",
     "build:content": "contentlayer build"
   },
   "dependencies": {
