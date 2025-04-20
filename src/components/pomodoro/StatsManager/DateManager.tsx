@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-
+import { cn } from "@/lib/utils";
 import { TimerRecord } from "@/types/pomodoro";
 import { DateRangeRequired } from "./index";
 const DateSelectRanges = [
@@ -61,7 +61,7 @@ export function DateManager({
   };
 
   return (
-    <div className="flex justify-between mb-4">
+    <div className={cn("flex justify-between mb-4", "sm:flex-col sm:gap-2")}>
       <div className="text-xl font-bold">Your Focus Time</div>
       <Popover>
         <PopoverTrigger asChild>

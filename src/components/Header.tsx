@@ -6,7 +6,7 @@ import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
 import { ModeToggle } from "@/components/ThemeSwitch";
 // import UserBtn from "@/components/UserBtn";
-import LocaleSwitch from "@/components/LocaleSwitch";
+// import LocaleSwitch from "@/components/LocaleSwitch";
 // import ThemeSwitch from "./ThemeSwitch";
 // import SearchButton from './SearchButton'
 import { cn } from "@/lib/utils";
@@ -68,7 +68,7 @@ const Header = () => {
           <UserBtn />
         </div> */}
         <ModeToggle />
-        <LocaleSwitch />
+        {/* <LocaleSwitch /> */}
         <MobileNav />
       </div>
     </header>
