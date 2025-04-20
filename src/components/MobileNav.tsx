@@ -8,6 +8,7 @@ import {
 } from "body-scroll-lock";
 import { Fragment, useState, useEffect, useRef } from "react";
 import Link from "./Link";
+// import UserBtn from "./UserBtn";
 import headerNavLinks from "@/data/headerNavLinks";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +23,6 @@ const MobileNav = () => {
           enableBodyScroll(navRef.current);
         }
       } else {
-        // Prevent scrolling
         if (navRef.current) {
           disableBodyScroll(navRef.current);
         }
@@ -67,7 +67,7 @@ const MobileNav = () => {
             leaveTo="opacity-0"
             unmount={false}
           >
-            <div className="fixed inset-0 z-60 bg-black/25" />
+            <div className="fixed inset-0 z-40 bg-black/25" />
           </Transition.Child>
 
           <Transition.Child
@@ -80,32 +80,39 @@ const MobileNav = () => {
             leaveTo="translate-x-full opacity-0"
             unmount={false}
           >
-            <Dialog.Panel className="fixed left-0 top-0 z-70 h-full w-full bg-white opacity-95 duration-300 dark:bg-gray-950 dark:opacity-[0.98]">
+            <Dialog.Panel className="fixed right-0 top-[64px] z-50 h-[calc(100vh-64px)] w-full bg-white opacity-95 duration-300 dark:bg-gray-950 dark:opacity-[0.98]">
               <nav
                 ref={navRef}
-                className="mt-8 flex h-full basis-0 flex-col items-start overflow-y-auto pl-12 pt-2 text-left"
+                className="flex h-full flex-col overflow-y-auto px-6 py-8"
               >
-                {headerNavLinks.map((link) => (
-                  <Link
-                    key={link.title}
-                    href={link.href}
-                    className="mb-4 py-2 pr-4 text-2xl font-bold tracking-widest text-gray-900 outline outline-0 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
-                    onClick={onToggleNav}
-                  >
-                    {link.title}
-                  </Link>
-                ))}
+                {/* <div className="mt-8 mb-8 w-full">
+                  <UserBtn />
+                </div> */}
+
+                <div className="flex flex-col space-y-4">
+                  {headerNavLinks.map((link) => (
+                    <Link
+                      key={link.title}
+                      href={link.href}
+                      className="text-xl font-semibold tracking-wide text-gray-900 outline-none transition-colors hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
+                      onClick={onToggleNav}
+                    >
+                      {link.title}
+                    </Link>
+                  ))}
+                </div>
               </nav>
 
               <button
-                className="fixed right-4 top-7 z-80 h-16 w-16 p-4 text-gray-900 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
-                aria-label="Toggle Menu"
+                className="absolute right-4 top-4 z-50 p-2 text-gray-900 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
+                aria-label="Close Menu"
                 onClick={onToggleNav}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
+                  className="h-6 w-6"
                 >
                   <path
                     fillRule="evenodd"

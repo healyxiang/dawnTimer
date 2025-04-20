@@ -11,6 +11,9 @@ import { ChevronUp } from "lucide-react";
 export const Faq = () => {
   return (
     <Container className="!p-0">
+      <h2 className="text-2xl font-bold text-center mb-8">
+        Frequently Asked Questions
+      </h2>
       <div className="w-full max-w-2xl p-2 mx-auto rounded-2xl">
         {faqdata.map((item) => (
           <div key={item.question} className="mb-5">
@@ -40,21 +43,18 @@ export const Faq = () => {
 
 const faqdata = [
   {
-    question: "Is this template completely free to use?",
-    answer: "Yes, this template is completely free to use.",
-  },
-  {
-    question: "Can I use it in a commercial project?",
-    answer: "Yes, this you can.",
-  },
-  {
-    question: "What is your refund policy? ",
+    question: "How can I improve my time management skills?",
     answer:
-      "If you're unhappy with your purchase for any reason, email us within 90 days and we'll refund you in full, no questions asked.",
+      "Start by prioritizing tasks, setting clear goals, and using tools like calendars or to-do lists. Our resources provide step-by-step guides..",
   },
   {
-    question: "Do you offer technical support? ",
+    question: "What resources do you offer for personal growth?",
     answer:
-      "No, we don't offer technical support for free downloads. Please purchase a support plan to get 6 months of support.",
+      "We offer articles, courses, and community support focused on mindset, habits, and career development.",
+  },
+  {
+    question: "How can I access your content?",
+    answer:
+      "Sign up for free to access our library of resources, or subscribe for premium content and personalized coaching.",
   },
 ];

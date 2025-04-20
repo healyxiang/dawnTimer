@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export default function UserBtn() {
   const { data: session } = useSession({ required: false });
@@ -39,12 +40,16 @@ export default function UserBtn() {
           <img className="w-8 rounded-md" src={session.user?.image} />
         </button> */}
         <PopoverTrigger asChild>
-          <Button variant="ghost">
+          <Button className={cn("sm:w-full")}>
             {userImg && <img className="w-8 rounded-md" src={userImg} />}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full">
-          <Button variant="secondary" onClick={() => signOut()}>
+          <Button
+            className={cn("sm:w-full")}
+            variant="secondary"
+            onClick={() => signOut()}
+          >
             Sign Out
           </Button>
         </PopoverContent>
@@ -52,8 +57,8 @@ export default function UserBtn() {
     );
   }
   return (
-    <>
-      <Button onClick={() => signIn()}>Sign in</Button>
-    </>
+    <Button className={cn("sm:w-full")} onClick={() => signIn()}>
+      Sign in
+    </Button>
   );
 }

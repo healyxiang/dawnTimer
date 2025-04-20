@@ -5,7 +5,7 @@ import headerNavLinks from "@/data/headerNavLinks";
 import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
 import { ModeToggle } from "@/components/ThemeSwitch";
-import UserBtn from "@/components/UserBtn";
+// import UserBtn from "@/components/UserBtn";
 import LocaleSwitch from "@/components/LocaleSwitch";
 // import ThemeSwitch from "./ThemeSwitch";
 // import SearchButton from './SearchButton'
@@ -18,9 +18,13 @@ const Header = () => {
   }
 
   return (
-    <header className={cn(headerClass, "px-8")}>
-      <Link href="/" aria-label={siteMetadata.headerTitle}>
-        <div className="flex items-center justify-between">
+    <header className={cn(headerClass, "px-8", "sm:px-4")}>
+      <Link
+        href="/"
+        aria-label={siteMetadata.headerTitle}
+        className="text-primary"
+      >
+        <div className="flex items-center justify-between text-primary">
           {/* <div className="mr-3">
             <Image src={Logo} alt="Rednote Logo" width={40} height={40} />
           </div> */}
@@ -60,8 +64,9 @@ const Header = () => {
             ))}
         </div>
         {/* <SearchButton /> */}
-        <UserBtn />
-        {/* <ThemeSwitch /> */}
+        {/* <div className="sm:hidden">
+          <UserBtn />
+        </div> */}
         <ModeToggle />
         <LocaleSwitch />
         <MobileNav />

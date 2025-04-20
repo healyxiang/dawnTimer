@@ -30,6 +30,7 @@ import {
   updateCurrentPreset,
 } from "@/service/pomodoro";
 import { cn } from "@/lib/utils";
+import { DEFAULT_PRESETS } from "@/service/pomodoro";
 
 export default function PomodoroApp() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -37,7 +38,9 @@ export default function PomodoroApp() {
   const [currentTask, setCurrentTask] = useState<Task | undefined>();
   const [isRatingDialogOpen, setIsRatingDialogOpen] = useState(false);
   const [timerRecords, setTimerRecords] = useState<TimerRecord[]>([]);
-  const [currentPreset, setCurrentPreset] = useState<TimerPreset | null>(null);
+  const [currentPreset, setCurrentPreset] = useState<TimerPreset>(
+    DEFAULT_PRESETS[0]
+  );
 
   // Initialize data from localStorage
   useEffect(() => {
@@ -204,10 +207,6 @@ export default function PomodoroApp() {
       toast.error("Failed to save timer record");
     }
   };
-
-  if (!currentPreset) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div

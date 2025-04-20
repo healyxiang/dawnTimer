@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 // import { Link } from "../i18n/navigation";
 // TODO: 后续考虑使用 i18n 的 Link 优化
 import { Languages } from "lucide-react";
@@ -26,23 +27,25 @@ export default function LocaleSwitch() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Languages />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[40px]">
-        {i18n.locales.map((locale) => {
-          return (
-            <DropdownMenuItem key={locale} className="w-full">
-              <Link href={redirectedPathname(locale)} className="w-full">
-                {locale}
-              </Link>
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className={cn("flex items-center")}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon">
+            <Languages />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-[40px]">
+          {i18n.locales.map((locale) => {
+            return (
+              <DropdownMenuItem key={locale} className="w-full">
+                <Link href={redirectedPathname(locale)} className="w-full">
+                  {locale}
+                </Link>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
