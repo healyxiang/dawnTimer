@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimerSettings } from "./TimerSettings";
+import { FOCUS_TIMER_TDK } from "@/constants/common";
 
 interface TimerProps {
   onComplete: () => void;
@@ -30,6 +31,23 @@ const TimerStatus = {
 } as const;
 
 type TimerStatusValue = (typeof TimerStatus)[keyof typeof TimerStatus];
+
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, "0")}:${secs
+    .toString()
+    .padStart(2, "0")}`;
+};
+
+function addTimerLeftToPageTitle(timeLeft: number) {
+  document.title = `${formatTime(timeLeft)} - ${FOCUS_TIMER_TDK.title}`;
+}
+
+function removeTimerLeftFromPageTitle() {
+  document.title =
+    (FOCUS_TIMER_TDK.title as string) || "DawnLibrary Focus Timer";
+}
 
 export function Timer({
   onComplete,
@@ -64,17 +82,10 @@ export function Timer({
     [currentPreset]
   );
 
-  const formatTime = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  }, []);
-
   useEffect(() => {
     if (isStopped) {
       setTimeLeft(getTimeForMode(mode));
+      removeTimerLeftFromPageTitle();
     }
   }, [currentPreset.settings.pomodoroLength, isStopped, getTimeForMode, mode]);
 
@@ -86,6 +97,7 @@ export function Timer({
       }
       interval = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
+        addTimerLeftToPageTitle(timeLeft - 1);
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
       setStatus(TimerStatus.Stopped);
@@ -123,15 +135,18 @@ export function Timer({
         if (newCount % currentPreset.settings.longBreakInterval === 0) {
           setMode("longBreak");
           setTimeLeft(currentPreset.settings.longBreakLength);
+          addTimerLeftToPageTitle(currentPreset.settings.longBreakLength);
         } else {
           setMode("shortBreak");
           setTimeLeft(currentPreset.settings.shortBreakLength);
+          addTimerLeftToPageTitle(currentPreset.settings.shortBreakLength);
         }
 
         onComplete();
       } else {
         setMode("pomodoro");
         setTimeLeft(currentPreset.settings.pomodoroLength);
+        addTimerLeftToPageTitle(currentPreset.settings.pomodoroLength);
       }
 
       toast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} completed!`);
