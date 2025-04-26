@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimerSettings } from "./TimerSettings";
-import { FOCUS_TIMER_TDK } from "@/constants/common";
+import { FOCUS_TIMER_TDK, AUDIO_FILES } from "@/constants/common";
 
 interface TimerProps {
   onComplete: () => void;
@@ -150,7 +150,7 @@ export function Timer({
       }
 
       toast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} completed!`);
-      new Audio("/sounds/tick_didi.mp3")
+      new Audio(AUDIO_FILES["focus-end"])
         .play()
         .then(() => {
           console.log("Audio played successfully");
