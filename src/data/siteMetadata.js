@@ -6,7 +6,7 @@ const siteMetadata = {
   description:
     "Discover expert-curated resources on time management, personal growth, and productivity. Whether you're looking to optimize your daily routine, build better habits, or achieve your goals faster, DawnLibrary provides the tools and insights you need to transform your life. Start your journey to a more efficient and fulfilling future today",
   language: "en-us",
-  theme: "system", // system, dark or light
+  theme: "light", // system, dark or light
   siteUrl: "https://bootfast.dev",
   siteRepo: "https://github.com/healyxiang/rednoteBar.git",
   siteLogo: `${process.env.BASE_PATH || ""}/static/images/logo.png`,
