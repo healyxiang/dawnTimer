@@ -49,6 +49,21 @@ function removeTimerLeftFromPageTitle() {
     (FOCUS_TIMER_TDK.title as string) || "DawnLibrary Focus Timer";
 }
 
+const TabItems = [
+  {
+    label: "Pomodoro",
+    value: "pomodoro",
+  },
+  {
+    label: "Short Break",
+    value: "shortBreak",
+  },
+  {
+    label: "Long Break",
+    value: "longBreak",
+  },
+];
+
 export function Timer({
   onComplete,
   currentTask,
@@ -208,27 +223,16 @@ export function Timer({
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-3 h-10">
-          <TabsTrigger
-            disabled={!isStopped}
-            value="pomodoro"
-            className="text-base cursor-pointer"
-          >
-            Pomodoro
-          </TabsTrigger>
-          <TabsTrigger
-            disabled={!isStopped}
-            value="shortBreak"
-            className="text-base cursor-pointer"
-          >
-            Short Break
-          </TabsTrigger>
-          <TabsTrigger
-            disabled={!isStopped}
-            value="longBreak"
-            className="text-base cursor-pointer"
-          >
-            Long Break
-          </TabsTrigger>
+          {TabItems.map((item) => (
+            <TabsTrigger
+              key={item.value}
+              disabled={!isStopped}
+              value={item.value}
+              className="text-base cursor-pointer"
+            >
+              {item.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 
@@ -243,6 +247,34 @@ export function Timer({
 
       <div className="text-7xl font-bold text-center tabular-nums tracking-tight">
         {formatTime(timeLeft)}
+      </div>
+
+      <div
+        className="flex items-center justify-center gap-2"
+        aria-label={`Pomodoro progress: ${pomodoroCount} of ${currentPreset.settings.longBreakInterval} sessions completed`}
+      >
+        {Array.from({ length: currentPreset.settings.longBreakInterval }).map(
+          (_, index) => (
+            <div
+              key={index}
+              className={cn(
+                "w-3 h-3 rounded-full transition-all duration-1000",
+                index < pomodoroCount
+                  ? "bg-primary"
+                  : index === pomodoroCount && mode === "pomodoro" && isRunning
+                  ? "bg-primary/60 animate-pulse-ring border-2 border-primary/80 relative after:absolute after:inset-0 after:rounded-full after:animate-[ping_6s_ease-in-out_infinite]"
+                  : "border-2 border-primary/80"
+              )}
+              aria-label={
+                index < pomodoroCount
+                  ? "Completed session"
+                  : index === pomodoroCount && mode === "pomodoro" && isRunning
+                  ? "Current active session"
+                  : "Pending session"
+              }
+            />
+          )
+        )}
       </div>
 
       <div className="flex justify-center gap-4">

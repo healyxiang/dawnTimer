@@ -36,7 +36,7 @@ export function SkillDialog({ isOpen, onClose, onSubmit }: SkillDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add New Skill</DialogTitle>
         </DialogHeader>
