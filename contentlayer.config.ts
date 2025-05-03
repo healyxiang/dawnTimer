@@ -1,9 +1,33 @@
 // contentlayer.config.ts
-import { defineDocumentType, makeSource } from "contentlayer/source-files";
+import {
+  defineDocumentType,
+  makeSource,
+  ComputedFields,
+} from "contentlayer/source-files";
+
+import { extractTocHeadings } from "pliny/mdx-plugins/index.js";
+
+const computedFields: ComputedFields = {
+  // readingTime: { type: 'json', resolve: (doc) => readingTime(doc.body.raw) },
+  slug: {
+    type: "string",
+    resolve: (doc) => doc._raw.flattenedPath.replace(/^.+?(\/)/, ""),
+  },
+  path: {
+    type: "string",
+    resolve: (doc) => doc._raw.flattenedPath,
+  },
+  filePath: {
+    type: "string",
+    resolve: (doc) => doc._raw.sourceFilePath,
+  },
+  toc: { type: "string", resolve: (doc) => extractTocHeadings(doc.body.raw) },
+};
 
 const Post = defineDocumentType(() => ({
   name: "Post",
   filePathPattern: `/en/**/*.mdx`,
+  // contentType: "mdx",
   contentType: "markdown",
   fields: {
     type: { type: "string", required: true },
@@ -12,6 +36,7 @@ const Post = defineDocumentType(() => ({
     summary: { type: "string", required: true },
   },
   computedFields: {
+    ...computedFields,
     url: {
       type: "string",
       resolve: (post) => {
@@ -31,6 +56,7 @@ const DePost = defineDocumentType(() => ({
   name: "DePost",
   filePathPattern: `/de/**/*.mdx`,
   // contentDirPath: "src/posts/de",
+  // contentType: "mdx",
   contentType: "markdown",
   fields: {
     type: { type: "string", required: true },
@@ -39,6 +65,7 @@ const DePost = defineDocumentType(() => ({
     summary: { type: "string", required: true },
   },
   computedFields: {
+    ...computedFields,
     url: {
       type: "string",
       // resolve: (post) => `/blog/${post._raw.flattenedPath}`,
@@ -56,6 +83,7 @@ const CsPost = defineDocumentType(() => ({
   name: "CsPost",
   filePathPattern: `/cs/**/*.mdx`,
   // contentDirPath: "src/posts/de",
+  // contentType: "mdx",
   contentType: "markdown",
   fields: {
     type: { type: "string", required: true },
@@ -64,6 +92,7 @@ const CsPost = defineDocumentType(() => ({
     summary: { type: "string", required: true },
   },
   computedFields: {
+    ...computedFields,
     url: {
       type: "string",
       // resolve: (post) => `/blog/${post._raw.flattenedPath}`,

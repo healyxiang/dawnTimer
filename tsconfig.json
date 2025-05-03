@@ -22,6 +22,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "pliny/*": ["./node_modules/pliny/*"],
       "contentlayer/generated": ["./.contentlayer/generated"]
     }
   },

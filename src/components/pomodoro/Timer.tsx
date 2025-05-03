@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,17 @@ const TabItems = [
   },
 ];
 
+function playAudio() {
+  new Audio(AUDIO_FILES["focus-end"])
+    .play()
+    .then(() => {
+      console.log("Audio played successfully");
+    })
+    .catch(() => {
+      console.error("Failed to play audio");
+    });
+}
+
 export function Timer({
   onComplete,
   currentTask,
@@ -77,7 +88,7 @@ export function Timer({
   );
   const [status, setStatus] = useState<TimerStatusValue>(TimerStatus.Stopped);
   const [pomodoroCount, setPomodoroCount] = useState(0);
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  const startTimeRef = useRef<Date | null>(null);
 
   const isRunning = status === TimerStatus.Running;
   //   const isPaused = status === TimerStatus.Paused;
@@ -105,28 +116,37 @@ export function Timer({
   }, [currentPreset.settings.pomodoroLength, isStopped, getTimeForMode, mode]);
 
   useEffect(() => {
+    // 计时器 每一种mode都使用该计时器，通过effect的更新来更新计时器
     let interval: NodeJS.Timeout;
     if (isRunning && timeLeft > 0) {
-      if (!startTime) {
-        setStartTime(new Date());
+      if (!startTimeRef.current) {
+        startTimeRef.current = new Date();
       }
-      interval = setInterval(() => {
+      console.log("startTime::", startTimeRef.current);
+      interval = setTimeout(() => {
         setTimeLeft((prev) => prev - 1);
         addTimerLeftToPageTitle(timeLeft - 1);
+        clearTimeout(interval);
       }, 1000);
-    } else if (timeLeft === 0 && isRunning) {
+    }
+    return () => clearTimeout(interval);
+  }, [isRunning, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && isRunning) {
+      // 计时器结束
       setStatus(TimerStatus.Stopped);
 
-      // 记录计时器完成
-      if (startTime) {
+      if (startTimeRef.current) {
+        // 记录计时器完成，计算时长，更新record
         const endTime = new Date();
         const duration = Math.round(
-          (endTime.getTime() - startTime.getTime()) / 60000
+          (endTime.getTime() - startTimeRef.current.getTime()) / 60000
         ); // 转换为分钟
 
         const record: TimerRecord = {
           id: Date.now().toString(),
-          startTime: startTime.toISOString(),
+          startTime: startTimeRef.current.toISOString(),
           duration,
           type:
             mode === "pomodoro"
@@ -137,16 +157,16 @@ export function Timer({
           taskName: currentTask?.title,
           skillIds: currentTask?.skills.map((skill) => skill.id),
         };
-
+        console.log("record duration::", duration);
         onRecordUpdate(record);
-        setStartTime(null);
+        startTimeRef.current = null;
       }
 
       if (mode === "pomodoro") {
         const newCount = pomodoroCount + 1;
         setPomodoroCount(newCount);
 
-        // Determine next break type
+        // 根据pomodoroCount来确定下一个mode
         if (newCount % currentPreset.settings.longBreakInterval === 0) {
           setMode("longBreak");
           setTimeLeft(currentPreset.settings.longBreakLength);
@@ -165,16 +185,8 @@ export function Timer({
       }
 
       toast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} completed!`);
-      new Audio(AUDIO_FILES["focus-end"])
-        .play()
-        .then(() => {
-          console.log("Audio played successfully");
-        })
-        .catch(() => {
-          console.error("Failed to play audio");
-        });
+      playAudio();
     }
-    return () => clearInterval(interval);
   }, [
     status,
     timeLeft,
@@ -182,31 +194,41 @@ export function Timer({
     onComplete,
     currentPreset,
     pomodoroCount,
-    startTime,
     onRecordUpdate,
     isRunning,
     currentTask?.title,
     currentTask?.skills,
   ]);
 
+  // 当 currentPreset 变化时，重置所有状态
+  useEffect(() => {
+    if (currentPreset.id) {
+      setMode("pomodoro");
+      setTimeLeft(currentPreset.settings.pomodoroLength);
+      setStatus(TimerStatus.Stopped);
+      setPomodoroCount(0);
+      startTimeRef.current = null;
+    }
+  }, [currentPreset.id, currentPreset.settings.pomodoroLength]);
+
   const handleModeChange = (newMode: TimerMode) => {
     setMode(newMode);
     setTimeLeft(getTimeForMode(newMode));
     setStatus(TimerStatus.Stopped);
-    setStartTime(null);
+    startTimeRef.current = null;
   };
 
   const handleStartPause = () => {
     setStatus(isRunning ? TimerStatus.Paused : TimerStatus.Running);
     if (!isRunning) {
-      setStartTime(new Date());
+      startTimeRef.current = new Date();
     }
   };
 
   const handleReset = () => {
     setTimeLeft(getTimeForMode(mode));
     setStatus(TimerStatus.Stopped);
-    setStartTime(null);
+    startTimeRef.current = null;
   };
 
   return (
