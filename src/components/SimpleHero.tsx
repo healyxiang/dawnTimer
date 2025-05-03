@@ -22,7 +22,7 @@ function SimpleHero() {
 
           <div className="flex justify-center gap-4">
             <button className="group relative px-6 py-3 rounded-lg font-semibold transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="/app">
+              <Link href="/pomodoro">
                 <span className="relative z-10">Get Started</span>
               </Link>
               <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary-foreground/20 to-primary-foreground/10 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
