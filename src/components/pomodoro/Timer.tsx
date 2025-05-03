@@ -121,8 +121,9 @@ export function Timer({
     if (isRunning && timeLeft > 0) {
       if (!startTimeRef.current) {
         startTimeRef.current = new Date();
+        console.log("startTime::", startTimeRef.current);
       }
-      console.log("startTime::", startTimeRef.current);
+
       interval = setTimeout(() => {
         setTimeLeft((prev) => prev - 1);
         addTimerLeftToPageTitle(timeLeft - 1);
@@ -139,10 +140,7 @@ export function Timer({
 
       if (startTimeRef.current) {
         // 记录计时器完成，计算时长，更新record
-        const endTime = new Date();
-        const duration = Math.round(
-          (endTime.getTime() - startTimeRef.current.getTime()) / 60000
-        ); // 转换为分钟
+        const duration = Math.round(getTimeForMode(mode) / 60);
 
         const record: TimerRecord = {
           id: Date.now().toString(),
@@ -189,6 +187,7 @@ export function Timer({
     }
   }, [
     status,
+    getTimeForMode,
     timeLeft,
     mode,
     onComplete,
@@ -222,6 +221,7 @@ export function Timer({
     setStatus(isRunning ? TimerStatus.Paused : TimerStatus.Running);
     if (!isRunning) {
       startTimeRef.current = new Date();
+      console.log("startTimeRef.current::", startTimeRef.current);
     }
   };
 
@@ -233,30 +233,31 @@ export function Timer({
 
   return (
     <Card className="w-full max-w-2xl p-6 space-y-6 relative bg-gradient-to-br from-background to-muted shadow-lg">
-      <TimerSettings
-        isStopped={isStopped}
-        preset={currentPreset}
-        onSave={onSettingsChange}
-      />
-
-      <Tabs
-        value={mode}
-        onValueChange={(value) => handleModeChange(value as TimerMode)}
-        className="w-full"
-      >
-        <TabsList className="grid w-full grid-cols-3 h-10">
-          {TabItems.map((item) => (
-            <TabsTrigger
-              key={item.value}
-              disabled={!isStopped}
-              value={item.value}
-              className="text-base cursor-pointer"
-            >
-              {item.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center justify-between gap-2">
+        <Tabs
+          value={mode}
+          onValueChange={(value) => handleModeChange(value as TimerMode)}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-3 h-10">
+            {TabItems.map((item) => (
+              <TabsTrigger
+                key={item.value}
+                disabled={!isStopped}
+                value={item.value}
+                className="text-base cursor-pointer"
+              >
+                {item.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <TimerSettings
+          isStopped={isStopped}
+          preset={currentPreset}
+          onSave={onSettingsChange}
+        />
+      </div>
 
       {currentTask && (
         <div className="text-base text-muted-foreground text-center bg-muted/50 p-2 rounded-lg">
