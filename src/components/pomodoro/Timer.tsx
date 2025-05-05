@@ -85,7 +85,7 @@ export function Timer({
   const [mode, setMode] = useState<TimerMode>("pomodoro");
   const [timeLeft, setTimeLeft] = useState(
     currentPreset.settings.pomodoroLength
-  );
+  ); // 计时器剩余时间 秒
   const [status, setStatus] = useState<TimerStatusValue>(TimerStatus.Stopped);
   const [pomodoroCount, setPomodoroCount] = useState(0);
   const startTimeRef = useRef<Date | null>(null);

@@ -15,34 +15,19 @@ export default function UserBtn() {
   const userImg = session?.user?.image;
   console.log("session in UserBtn:", session);
 
-  useEffect(() => {
-    const testApiCall = async () => {
-      const response = await fetch("/api/test", {
-        method: "GET",
-        // body: JSON.stringify({
-        //   model_id: 'dark-sushi-25d-v4',
-        //   scheduler: 'UniPCMultistepScheduler',
-        //   prompt: Prompt.test, // 替换为实际提示
-        //   init_image: initImg,
-        // }),
-      });
-      const data = await response.json();
-      console.log("testApiCall data::", data);
-      return data;
-    };
-    testApiCall();
-  }, []);
-
   if (session) {
     return (
       <Popover>
-        {/* <button onClick={() => signOut()}>
-          <img className="w-8 rounded-md" src={session.user?.image} />
-        </button> */}
         <PopoverTrigger asChild>
-          <Button className={cn("sm:w-full")}>
-            {userImg && <img className="w-8 rounded-md" src={userImg} />}
-          </Button>
+          <div className={cn("sm:w-full")}>
+            {userImg ? (
+              <img className="w-8 rounded-md cursor-pointer" src={userImg} />
+            ) : (
+              <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-gray-100 text-primary font-bold">
+                {session.user?.name?.charAt(0)}
+              </div>
+            )}
+          </div>
         </PopoverTrigger>
         <PopoverContent className="w-full">
           <Button
