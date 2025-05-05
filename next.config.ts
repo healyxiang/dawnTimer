@@ -4,6 +4,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 // const locales = ["en", "de", "cs"];
 const nextConfig: NextConfig = withContentlayer({
   /* config options here */
+  reactStrictMode: true,
+  pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
 });
 
 const withNextIntl = createNextIntlPlugin();

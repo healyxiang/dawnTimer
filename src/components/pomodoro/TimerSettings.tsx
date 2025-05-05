@@ -148,7 +148,7 @@ export function TimerSettings({
         <Button
           variant="outline"
           size="icon"
-          className="absolute top-4 right-4"
+          className="cursor-pointer"
           disabled={!isStopped}
         >
           <Settings className="h-4 w-4" />

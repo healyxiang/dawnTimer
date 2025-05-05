@@ -44,9 +44,9 @@ export type TimerPresetWithoutNameAndCreatedAt = Omit<
 >;
 
 export interface TimerSettings {
-  pomodoroLength: number;
-  shortBreakLength: number;
-  longBreakLength: number;
+  pomodoroLength: number; // 秒
+  shortBreakLength: number; // 秒
+  longBreakLength: number; // 秒
   autoStartBreaks: boolean;
   autoStartPomodoros: boolean;
   longBreakInterval: number;

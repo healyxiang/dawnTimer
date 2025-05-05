@@ -8,14 +8,6 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    // screens: {
-    //   xs: "0px",
-    //   sm: { raw: "(min-width: 0px) and (max-width: 40rem)" },
-    //   md: { raw: "(min-width: 40.01rem) and (max-width: 48rem)" },
-    //   lg: { raw: "(min-width: 48.01rem) and (max-width: 64rem)" },
-    //   xl: { raw: "(min-width: 64.01rem) and (max-width: 80rem)" },
-    //   "2xl": { raw: "(min-width: 80.01rem)" },
-    // },
     extend: {
       colors: {
         background: "hsl(var(--background))",
@@ -64,6 +56,15 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        "pulse-ring": {
+          "0%, 100%": { opacity: "0.9", transform: "scale(1)" },
+          "50%": { opacity: "0.5", transform: "scale(0.95)" },
+        },
+      },
+      animation: {
+        "pulse-ring": "pulse-ring 6s ease-in-out infinite",
+      },
     },
     screens: {
       sm: { max: "48rem" }, // 768px
@@ -81,5 +82,5 @@ export default {
     },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;

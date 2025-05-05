@@ -11,3 +11,13 @@ export const formatTime = (minutes: number) => {
   const mins = minutes % 60;
   return `${hours}h ${mins}m`;
 };
+
+// 使用setTimeout模拟setTimeInterval
+export const customSetTimeInterval = (callback: () => void, delay: number) => {
+  let timer: NodeJS.Timeout | null = null;
+  timer = setTimeout(() => {
+    callback();
+    customSetTimeInterval(callback, delay);
+  }, delay);
+  return () => clearTimeout(timer);
+};

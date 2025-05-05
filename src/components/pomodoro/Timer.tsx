@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,32 @@ function removeTimerLeftFromPageTitle() {
     (FOCUS_TIMER_TDK.title as string) || "DawnLibrary Focus Timer";
 }
 
+const TabItems = [
+  {
+    label: "Pomodoro",
+    value: "pomodoro",
+  },
+  {
+    label: "Short Break",
+    value: "shortBreak",
+  },
+  {
+    label: "Long Break",
+    value: "longBreak",
+  },
+];
+
+function playAudio() {
+  new Audio(AUDIO_FILES["focus-end"])
+    .play()
+    .then(() => {
+      console.log("Audio played successfully");
+    })
+    .catch(() => {
+      console.error("Failed to play audio");
+    });
+}
+
 export function Timer({
   onComplete,
   currentTask,
@@ -59,10 +85,10 @@ export function Timer({
   const [mode, setMode] = useState<TimerMode>("pomodoro");
   const [timeLeft, setTimeLeft] = useState(
     currentPreset.settings.pomodoroLength
-  );
+  ); // 计时器剩余时间 秒
   const [status, setStatus] = useState<TimerStatusValue>(TimerStatus.Stopped);
   const [pomodoroCount, setPomodoroCount] = useState(0);
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  const startTimeRef = useRef<Date | null>(null);
 
   const isRunning = status === TimerStatus.Running;
   //   const isPaused = status === TimerStatus.Paused;
@@ -90,28 +116,35 @@ export function Timer({
   }, [currentPreset.settings.pomodoroLength, isStopped, getTimeForMode, mode]);
 
   useEffect(() => {
+    // 计时器 每一种mode都使用该计时器，通过effect的更新来更新计时器
     let interval: NodeJS.Timeout;
     if (isRunning && timeLeft > 0) {
-      if (!startTime) {
-        setStartTime(new Date());
+      if (!startTimeRef.current) {
+        startTimeRef.current = new Date();
+        console.log("startTime::", startTimeRef.current);
       }
-      interval = setInterval(() => {
+
+      interval = setTimeout(() => {
         setTimeLeft((prev) => prev - 1);
         addTimerLeftToPageTitle(timeLeft - 1);
+        clearTimeout(interval);
       }, 1000);
-    } else if (timeLeft === 0 && isRunning) {
+    }
+    return () => clearTimeout(interval);
+  }, [isRunning, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && isRunning) {
+      // 计时器结束
       setStatus(TimerStatus.Stopped);
 
-      // 记录计时器完成
-      if (startTime) {
-        const endTime = new Date();
-        const duration = Math.round(
-          (endTime.getTime() - startTime.getTime()) / 60000
-        ); // 转换为分钟
+      if (startTimeRef.current) {
+        // 记录计时器完成，计算时长，更新record
+        const duration = Math.round(getTimeForMode(mode) / 60);
 
         const record: TimerRecord = {
           id: Date.now().toString(),
-          startTime: startTime.toISOString(),
+          startTime: startTimeRef.current.toISOString(),
           duration,
           type:
             mode === "pomodoro"
@@ -122,16 +155,16 @@ export function Timer({
           taskName: currentTask?.title,
           skillIds: currentTask?.skills.map((skill) => skill.id),
         };
-
+        console.log("record duration::", duration);
         onRecordUpdate(record);
-        setStartTime(null);
+        startTimeRef.current = null;
       }
 
       if (mode === "pomodoro") {
         const newCount = pomodoroCount + 1;
         setPomodoroCount(newCount);
 
-        // Determine next break type
+        // 根据pomodoroCount来确定下一个mode
         if (newCount % currentPreset.settings.longBreakInterval === 0) {
           setMode("longBreak");
           setTimeLeft(currentPreset.settings.longBreakLength);
@@ -150,87 +183,81 @@ export function Timer({
       }
 
       toast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} completed!`);
-      new Audio(AUDIO_FILES["focus-end"])
-        .play()
-        .then(() => {
-          console.log("Audio played successfully");
-        })
-        .catch(() => {
-          console.error("Failed to play audio");
-        });
+      playAudio();
     }
-    return () => clearInterval(interval);
   }, [
     status,
+    getTimeForMode,
     timeLeft,
     mode,
     onComplete,
     currentPreset,
     pomodoroCount,
-    startTime,
     onRecordUpdate,
     isRunning,
     currentTask?.title,
     currentTask?.skills,
   ]);
 
+  // 当 currentPreset 变化时，重置所有状态
+  useEffect(() => {
+    if (currentPreset.id) {
+      setMode("pomodoro");
+      setTimeLeft(currentPreset.settings.pomodoroLength);
+      setStatus(TimerStatus.Stopped);
+      setPomodoroCount(0);
+      startTimeRef.current = null;
+    }
+  }, [currentPreset.id, currentPreset.settings.pomodoroLength]);
+
   const handleModeChange = (newMode: TimerMode) => {
     setMode(newMode);
     setTimeLeft(getTimeForMode(newMode));
     setStatus(TimerStatus.Stopped);
-    setStartTime(null);
+    startTimeRef.current = null;
   };
 
   const handleStartPause = () => {
     setStatus(isRunning ? TimerStatus.Paused : TimerStatus.Running);
     if (!isRunning) {
-      setStartTime(new Date());
+      startTimeRef.current = new Date();
+      console.log("startTimeRef.current::", startTimeRef.current);
     }
   };
 
   const handleReset = () => {
     setTimeLeft(getTimeForMode(mode));
     setStatus(TimerStatus.Stopped);
-    setStartTime(null);
+    startTimeRef.current = null;
   };
 
   return (
     <Card className="w-full max-w-2xl p-6 space-y-6 relative bg-gradient-to-br from-background to-muted shadow-lg">
-      <TimerSettings
-        isStopped={isStopped}
-        preset={currentPreset}
-        onSave={onSettingsChange}
-      />
-
-      <Tabs
-        value={mode}
-        onValueChange={(value) => handleModeChange(value as TimerMode)}
-        className="w-full"
-      >
-        <TabsList className="grid w-full grid-cols-3 h-10">
-          <TabsTrigger
-            disabled={!isStopped}
-            value="pomodoro"
-            className="text-base cursor-pointer"
-          >
-            Pomodoro
-          </TabsTrigger>
-          <TabsTrigger
-            disabled={!isStopped}
-            value="shortBreak"
-            className="text-base cursor-pointer"
-          >
-            Short Break
-          </TabsTrigger>
-          <TabsTrigger
-            disabled={!isStopped}
-            value="longBreak"
-            className="text-base cursor-pointer"
-          >
-            Long Break
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center justify-between gap-2">
+        <Tabs
+          value={mode}
+          onValueChange={(value) => handleModeChange(value as TimerMode)}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-3 h-10">
+            {TabItems.map((item) => (
+              <TabsTrigger
+                key={item.value}
+                disabled={!isStopped}
+                value={item.value}
+                className="text-base cursor-pointer"
+              >
+                {item.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <TimerSettings
+          isStopped={isStopped}
+          preset={currentPreset}
+          onSave={onSettingsChange}
+        />
+      </div>
 
       {currentTask && (
         <div className="text-base text-muted-foreground text-center bg-muted/50 p-2 rounded-lg">
@@ -243,6 +270,34 @@ export function Timer({
 
       <div className="text-7xl font-bold text-center tabular-nums tracking-tight">
         {formatTime(timeLeft)}
+      </div>
+
+      <div
+        className="flex items-center justify-center gap-2"
+        aria-label={`Pomodoro progress: ${pomodoroCount} of ${currentPreset.settings.longBreakInterval} sessions completed`}
+      >
+        {Array.from({ length: currentPreset.settings.longBreakInterval }).map(
+          (_, index) => (
+            <div
+              key={index}
+              className={cn(
+                "w-3 h-3 rounded-full transition-all duration-1000",
+                index < pomodoroCount
+                  ? "bg-primary"
+                  : index === pomodoroCount && mode === "pomodoro" && isRunning
+                  ? "bg-primary/60 animate-pulse-ring border-2 border-primary/80 relative after:absolute after:inset-0 after:rounded-full after:animate-[ping_6s_ease-in-out_infinite]"
+                  : "border-2 border-primary/80"
+              )}
+              aria-label={
+                index < pomodoroCount
+                  ? "Completed session"
+                  : index === pomodoroCount && mode === "pomodoro" && isRunning
+                  ? "Current active session"
+                  : "Pending session"
+              }
+            />
+          )
+        )}
       </div>
 
       <div className="flex justify-center gap-4">

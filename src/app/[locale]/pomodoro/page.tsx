@@ -139,9 +139,28 @@ export default function PomodoroApp() {
     }
   };
 
-  const handlePomodoroComplete = () => {
+  const handlePomodoroComplete = async () => {
     // TODO: 后续打开评分弹窗
     // setIsRatingDialogOpen(true);
+    if (currentTask) {
+      try {
+        const updatedTask = await updateTask(currentTask.id, {
+          pomodoroRatings: [...currentTask.pomodoroRatings],
+        });
+
+        if (updatedTask) {
+          setTasks((prev) =>
+            prev.map((task) =>
+              task.id === currentTask.id ? updatedTask : task
+            )
+          );
+          toast.success("Session rated successfully");
+        }
+      } catch (error) {
+        toast.error("Failed to save rating");
+        console.error("Error saving rating:", error);
+      }
+    }
   };
 
   const handleRatingSubmit = async (ratings: {
@@ -193,10 +212,10 @@ export default function PomodoroApp() {
   };
 
   const handleTimerComplete = async (record: TimerRecord) => {
-    if (!currentTask) {
-      toast.error("No task selected");
-      return;
-    }
+    // if (!currentTask) {
+    //   toast.error("No task selected");
+    //   return;
+    // }
 
     try {
       // 更新计时记录
@@ -217,7 +236,7 @@ export default function PomodoroApp() {
     >
       <div
         className={cn(
-          "flex justify-center mb-8 sticky top-[100px]",
+          "flex justify-center mb-8 sticky top-[93px]",
           "md:static md:w-full"
         )}
       >
