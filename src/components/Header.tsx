@@ -18,7 +18,13 @@ const Header = () => {
   }
 
   return (
-    <header className={cn(headerClass, "px-8", "sm:px-4")}>
+    <header
+      className={cn(
+        headerClass,
+        "px-8 backdrop-blur supports-[backdrop-filter]:bg-background/6",
+        "sm:px-4"
+      )}
+    >
       <Link
         href="/"
         aria-label={siteMetadata.headerTitle}
