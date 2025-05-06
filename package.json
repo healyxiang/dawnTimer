@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "cross-env INIT_CWD=$PWD next dev --turbopack",
     "build": "npm run prisma:generate && npm run build:content && next build",
     "start": "next start",
     "lint": "next lint",
@@ -58,6 +58,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/tailwindcss": "^3.1.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.2.1",
     "tailwindcss": "^4",

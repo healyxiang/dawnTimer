@@ -5,7 +5,7 @@ import headerNavLinks from "@/data/headerNavLinks";
 import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
 import { ModeToggle } from "@/components/ThemeSwitch";
-// import UserBtn from "@/components/UserBtn";
+import UserBtn from "@/components/UserBtn";
 // import LocaleSwitch from "@/components/LocaleSwitch";
 // import ThemeSwitch from "./ThemeSwitch";
 // import SearchButton from './SearchButton'
@@ -18,7 +18,13 @@ const Header = () => {
   }
 
   return (
-    <header className={cn(headerClass, "px-8", "sm:px-4")}>
+    <header
+      className={cn(
+        headerClass,
+        "px-8 backdrop-blur supports-[backdrop-filter]:bg-background/6",
+        "sm:px-4"
+      )}
+    >
       <Link
         href="/"
         aria-label={siteMetadata.headerTitle}
@@ -64,9 +70,9 @@ const Header = () => {
             ))}
         </div>
         {/* <SearchButton /> */}
-        {/* <div className="sm:hidden">
+        <div className="sm:hidden">
           <UserBtn />
-        </div> */}
+        </div>
         <ModeToggle />
         {/* <LocaleSwitch /> */}
         <MobileNav />
