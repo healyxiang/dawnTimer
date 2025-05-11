@@ -30,7 +30,7 @@ export function TimerStats({
 }: TimerStatsProps) {
   const getAllTimeFocusTime = () => {
     return timerRecords
-      .filter((record) => record.type === "focus")
+      .filter((record) => record.type === "pomodoro")
       .reduce((sum, record) => sum + record.duration, 0);
   };
 
@@ -40,7 +40,7 @@ export function TimerStats({
       .filter((record) => {
         const recordDate = new Date(record.startTime);
         return (
-          record.type === "focus" && recordDate >= from && recordDate <= to
+          record.type === "pomodoro" && recordDate >= from && recordDate <= to
         );
       })
       .reduce((sum, record) => sum + record.duration, 0);
