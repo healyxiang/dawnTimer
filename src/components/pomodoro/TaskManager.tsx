@@ -128,7 +128,7 @@ export function TaskManager({
                   </Button>
                 </div>
               </div>
-              {task.skills.length > 0 && (
+              {task.skills && task.skills.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {task.skills.map((skill) => (
                     <Badge

@@ -12,7 +12,7 @@ import {
   PomodoroRating,
   Rating,
   TimerRecord,
-  TimerPreset,
+  // TimerPreset,
 } from "@/types/pomodoro";
 import { toast } from "sonner";
 import {
@@ -27,10 +27,9 @@ import {
   deleteSkill,
   getTimerRecords,
   addTimerRecord,
-  updateCurrentPreset,
+  // updateCurrentPreset,
 } from "@/service/pomodoro";
 import { cn } from "@/lib/utils";
-import { DEFAULT_PRESETS } from "@/service/pomodoro";
 
 export default function PomodoroApp() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -38,13 +37,11 @@ export default function PomodoroApp() {
   const [currentTask, setCurrentTask] = useState<Task | undefined>();
   const [isRatingDialogOpen, setIsRatingDialogOpen] = useState(false);
   const [timerRecords, setTimerRecords] = useState<TimerRecord[]>([]);
-  const [currentPreset, setCurrentPreset] = useState<TimerPreset>(
-    DEFAULT_PRESETS[0]
-  );
 
   // Initialize data from localStorage
   useEffect(() => {
     const initializeData = async () => {
+      console.log("initializeData");
       const [presets, lastPresetId, tasksData, skillsData, records] =
         await Promise.all([
           getTimerPresets(),
@@ -53,9 +50,9 @@ export default function PomodoroApp() {
           getSkills(),
           getTimerRecords(),
         ]);
-
-      const preset = presets.find((p) => p.id === lastPresetId) || presets[0];
-      setCurrentPreset(preset);
+      console.log("presets::", presets);
+      console.log("lastPresetId::", lastPresetId);
+      // const preset = presets.find((p) => p.id === lastPresetId) || presets[0];
       setTasks(tasksData);
       setSkills(skillsData);
       setTimerRecords(records);
@@ -129,7 +126,7 @@ export default function PomodoroApp() {
       setTasks((prev) =>
         prev.map((task) => ({
           ...task,
-          skills: task.skills.filter((skill) => skill.id !== skillId),
+          // skills: task.skills.filter((skill) => skill.id !== skillId),
         }))
       );
       toast.success("Skill deleted successfully");
@@ -196,20 +193,20 @@ export default function PomodoroApp() {
     setIsRatingDialogOpen(false);
   };
 
-  const handleSettingsChange = async (
-    newPreset: Omit<TimerPreset, "name" | "createdAt">
-  ) => {
-    try {
-      const updatedPreset = await updateCurrentPreset(newPreset);
-      if (updatedPreset) {
-        setCurrentPreset(updatedPreset);
-        toast.success("Timer settings updated successfully");
-      }
-    } catch (error) {
-      console.error("Failed to update timer settings:", error);
-      toast.error("Failed to update timer settings");
-    }
-  };
+  // const handleSettingsChange = async (
+  //   newPreset: Omit<TimerPreset, "name" | "createdAt">
+  // ) => {
+  //   try {
+  //     const updatedPreset = await updateCurrentPreset(newPreset);
+  //     if (updatedPreset) {
+  //       // setCurrentPreset(updatedPreset);
+  //       toast.success("Timer settings updated successfully");
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to update timer settings:", error);
+  //     toast.error("Failed to update timer settings");
+  //   }
+  // };
 
   const handleTimerComplete = async (record: TimerRecord) => {
     // if (!currentTask) {
@@ -243,9 +240,7 @@ export default function PomodoroApp() {
         <Timer
           onComplete={handlePomodoroComplete}
           currentTask={currentTask}
-          currentPreset={currentPreset}
-          onSettingsChange={handleSettingsChange}
-          onRecordUpdate={handleTimerComplete}
+          onTimerComplete={handleTimerComplete}
         />
       </div>
 

@@ -47,7 +47,10 @@ model User {
   accounts      Account[]
   sessions      Session[]
   tasks         Task[]
- 
+  skills        Skill[]
+  timerPresets  TimerPreset[]
+  timerRecords  TimerRecord[]
+
   @@map("users")
 }
  
@@ -60,43 +63,70 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-enum TaskType {
-  TEXT2IMG
-  IMG2IMG
-  AVATAR
-}
-
-enum TaskStatus {
-  pending
-  processing
-  success
-  error
-}
-
 model Task {
-  id          String     @id @default(cuid())
-  type        TaskType
-  status      TaskStatus @default(pending)
-  requestId   String @default("none") // modellabs的requestId
-  fetchUrl    String?
-  futureLinks String[] // 未来可能的图片链接
-  prompt      String?    @db.Text
-  initImage   String?    // 初始图片的URL，用于img2img
-  outputImage String[]    // 生成的图片URL
-  modelId     String?    // 使用的模型ID
-  settings    Json?      // 其他设置参数，如尺寸、步数等
-  error       String?    @db.Text
-  
-  // 时间戳
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
-  // 关联用户
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  isDeleted       Boolean  @default(false)
+  completed       Boolean  @default(false)
+  pomodoroRatings Int[]   @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  skills          Skill[]  // 和Skill多对多关系
+  userId          String   @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([type])
-  @@index([status])
-  @@map("tasks")
+  @@map("dawn_tasks")
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isDeleted   Boolean  @default(false)
+  color       String?
+  tasks       Task[]   // 和Task的多对多关系
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("skills")
+}
+
+model TimerPreset {
+  id                String   @id @default(cuid())
+  name              String
+  pomodoroLength    Int      // in seconds
+  shortBreakLength  Int      // in seconds
+  longBreakLength   Int      // in seconds
+  autoStartBreaks   Boolean  @default(false)
+  autoStartPomodoros Boolean @default(false)
+  longBreakInterval Int      @default(4)
+  isDefault         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  userId            String   @map("user_id")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, isDefault], name: "one_default_per_user")
+
+  @@map("timer_presets")
+}
+
+model TimerRecord {
+  id          String   @id @default(cuid())
+  startTime   DateTime
+  endTime     DateTime
+  type        String   // "pomodoro" | "shortBreak" | "longBreak"
+  duration    Int      // in minutes
+  taskId      String?
+  skillIds    String[]
+  round       Int      @default(1)
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("timer_records")
 }
