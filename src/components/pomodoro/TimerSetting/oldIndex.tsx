@@ -28,8 +28,8 @@ import {
   getTimerPresets,
   addTimerPreset,
   deleteTimerPreset,
-  DEFAULT_PRESETS,
 } from "@/service/pomodoro";
+import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 
 interface TimerSettingsProps {
   //   settings: TimerSettingsType;
@@ -55,7 +55,7 @@ export function TimerSettings({
   const [isOpen, setIsOpen] = useState(false);
   const [timerSettingMode, setTimerSettingMode] =
     useState<TimerSettingModeValue>(TimerSettingMode.Default);
-  const [localSettings, setLocalSettings] = useState(preset.settings);
+  const [localSettings, setLocalSettings] = useState({ ...preset });
   const [presets, setPresets] = useState<TimerPreset[]>(DEFAULT_PRESETS);
   const [selectedPreset, setSelectedPreset] = useState<string>(preset.id);
   const [timerName, setTimerName] = useState("");
@@ -82,8 +82,8 @@ export function TimerSettings({
 
   const handleSave = () => {
     onSave({
-      id: selectedPreset,
-      settings: localSettings,
+      // id: selectedPreset,
+      ...localSettings,
       updatedAt: new Date(),
     });
     setIsOpen(false);
@@ -112,7 +112,7 @@ export function TimerSettings({
   const handlePresetSelect = (presetId: string) => {
     const preset = presets.find((p) => p.id === presetId);
     if (preset) {
-      setLocalSettings(preset.settings);
+      setLocalSettings(preset);
       setSelectedPreset(presetId);
     }
   };
@@ -125,13 +125,12 @@ export function TimerSettings({
 
     try {
       const newPreset = await addTimerPreset({
-        id: Date.now().toString(),
+        ...localSettings,
         name: timerName.trim(),
-        settings: localSettings,
+        id: Date.now().toString(),
       });
 
       setPresets((prev) => [...prev, newPreset]);
-      //   onSave(localSettings);
       setSelectedPreset(newPreset.id);
       setTimerSettingMode(TimerSettingMode.Default);
       setTimerName("");

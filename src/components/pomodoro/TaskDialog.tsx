@@ -45,7 +45,7 @@ export function TaskDialog({
       title: title.trim(),
       description: description.trim(),
       completed: false,
-      skills: skills.filter((skill) => selectedSkills.includes(skill.id)),
+      skillIds: selectedSkills,
     });
     setTitle("");
     setDescription("");
