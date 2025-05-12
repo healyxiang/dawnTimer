@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { successResponse, apiResponses } from "@/lib/api-response";
 import { Prisma } from "@prisma/client";
 
-import { DEFAULT_PRESETS } from "@/constants/pomodoro";
+// import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 
 export async function GET() {
   try {
@@ -13,7 +13,8 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
     return successResponse(
-      [...DEFAULT_PRESETS, ...presets],
+      //   [...DEFAULT_PRESETS, ...presets],
+      presets,
       "Presets fetched successfully"
     );
   } catch (error) {

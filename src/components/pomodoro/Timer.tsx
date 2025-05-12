@@ -17,6 +17,8 @@ import { TimerSetting } from "./TimerSetting";
 import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 import { FOCUS_TIMER_TDK, AUDIO_FILES } from "@/constants/common";
 
+import { getTimerPresets } from "@/service/pomodoro";
+
 interface TimerProps {
   onComplete: () => void;
   onTimerComplete: (record: TimerRecord) => void;
@@ -184,6 +186,7 @@ export function Timer({ currentTask, onTimerComplete }: TimerProps) {
   }, [currentPreset.pomodoroLength, updateTimeLeft]);
 
   useEffect(() => {
+    // 启动Pomodoro倒计时
     function updateTimer() {
       clearTimer();
       if (timerStatus === TimerStatus.Running) {
@@ -229,6 +232,9 @@ export function Timer({ currentTask, onTimerComplete }: TimerProps) {
     } else {
       clearTimer();
     }
+    return () => {
+      clearTimer();
+    };
   }, [
     timerStatus,
     updateTimeLeft,
@@ -241,13 +247,25 @@ export function Timer({ currentTask, onTimerComplete }: TimerProps) {
 
   // 当 currentPreset 变化时，重置所有状态
   useEffect(() => {
+    console.log("currentPreset::", currentPreset);
     if (currentPreset.id) {
       setPomodoroCount(1);
       setMode("pomodoro");
       updateTimeLeft(currentPreset.pomodoroLength);
       startTimeRef.current = null;
     }
-  }, [currentPreset.id, currentPreset.pomodoroLength, updateTimeLeft]);
+  }, [currentPreset, updateTimeLeft]);
+
+  useEffect(() => {
+    async function fetchPresets() {
+      const presets = await getTimerPresets();
+      console.log("presets in fetchPresets::", presets);
+      if (presets.length > 0) {
+        setCurrentPreset(presets[0]);
+      }
+    }
+    fetchPresets();
+  }, []);
 
   const handleModeChange = (newMode: TimerMode) => {
     setMode(newMode);

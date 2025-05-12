@@ -55,7 +55,7 @@ export function ChangePresetDialog({
             </SelectTrigger>
             <SelectContent>
               {presets.map((preset) => (
-                <SelectItem key={preset.id} value={preset.id}>
+                <SelectItem key={preset.id} value={preset.id || ""}>
                   {preset.name}
                 </SelectItem>
               ))}

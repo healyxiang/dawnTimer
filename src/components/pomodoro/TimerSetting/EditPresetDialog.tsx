@@ -67,10 +67,10 @@ export function EditPresetDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Preset</DialogTitle>
+          <DialogTitle>Edit Pomodoro Settings</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
@@ -78,7 +78,7 @@ export function EditPresetDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter preset name"
             />
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="pomodoroLength">Pomodoro Length (minutes)</Label>
             <Input
