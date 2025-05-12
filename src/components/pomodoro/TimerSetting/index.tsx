@@ -7,12 +7,13 @@ import { TimerPreset } from "@/types/pomodoro";
 import { Settings } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// 暂时只展示Edit Pomodoro Settings
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 
 import {
@@ -98,9 +99,14 @@ TimerSettingProps) {
 
   const handlePresetUpdate = async (preset: TimerPreset) => {
     try {
-      await updateTimerPreset(preset);
-      setPresets((prev) => prev.map((p) => (p.id === preset.id ? preset : p)));
-      toast.success("Preset updated successfully");
+      const newPreset = await updateTimerPreset(preset);
+      if (newPreset) {
+        onPresetChange(newPreset);
+        setPresets((prev) =>
+          prev.map((p) => (p.id === preset.id ? newPreset : p))
+        );
+        toast.success("Preset updated successfully");
+      }
     } catch (error) {
       console.error("Failed to update preset:", error);
       toast.error("Failed to update preset");
@@ -110,7 +116,16 @@ TimerSettingProps) {
   return (
     <div className="flex flex-col items-center space-y-4">
       <div className="flex items-center space-x-2">
-        <DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={disabled}
+          onClick={() => setIsEditDialogOpen(true)}
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+        {/* 暂时只展示Edit Pomodoro Settings */}
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" disabled={disabled}>
               <Settings className="h-5 w-5" />
@@ -127,7 +142,7 @@ TimerSettingProps) {
               Add Preset
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
 
       <ChangePresetDialog

@@ -32,7 +32,7 @@ export interface Task {
 }
 
 export interface TimerPreset {
-  id: string;
+  id?: string;
   name: string;
   pomodoroLength: number; // 秒
   shortBreakLength: number; // 秒

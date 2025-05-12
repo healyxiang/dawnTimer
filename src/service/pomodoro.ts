@@ -366,14 +366,15 @@ export const updateTimerPreset = async (
   preset: Omit<TimerPreset, "createdAt" | "updatedAt">
 ): Promise<TimerPreset | null> => {
   try {
+    const presetId = preset.id;
     const response = await fetch("/api/pomodoro/presets", {
-      method: "PUT",
+      method: presetId ? "PUT" : "POST", // 如果presetId存在，则更新，否则创建
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        id: preset.id,
-        name: preset.name,
+        id: presetId,
+        name: preset.name || "First Preset",
         pomodoroLength: preset.pomodoroLength,
         shortBreakLength: preset.shortBreakLength,
         longBreakLength: preset.longBreakLength,
