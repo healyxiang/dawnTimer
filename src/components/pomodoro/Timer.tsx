@@ -9,19 +9,20 @@ import {
   Task,
   TimerRecord,
   TimerPreset,
-  TimerPresetWithoutNameAndCreatedAt,
+  // TimerPresetWithoutNameAndCreatedAt,
 } from "@/types/pomodoro";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TimerSettings } from "./TimerSettings";
+import { TimerSetting } from "./TimerSetting";
+import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 import { FOCUS_TIMER_TDK, AUDIO_FILES } from "@/constants/common";
+
+import { getTimerPresets } from "@/service/pomodoro";
 
 interface TimerProps {
   onComplete: () => void;
-  onRecordUpdate: (record: TimerRecord) => void;
+  onTimerComplete: (record: TimerRecord) => void;
   currentTask?: Task;
-  currentPreset: TimerPreset;
-  onSettingsChange: (settings: TimerPresetWithoutNameAndCreatedAt) => void;
 }
 
 const TimerStatus = {
@@ -75,161 +76,224 @@ function playAudio() {
     });
 }
 
-export function Timer({
-  onComplete,
-  currentTask,
-  currentPreset,
-  onSettingsChange,
-  onRecordUpdate,
-}: TimerProps) {
+export function Timer({ currentTask, onTimerComplete }: TimerProps) {
+  const [timerStatus, setTimerStatus] = useState<TimerStatusValue>(
+    TimerStatus.Stopped
+  );
+  const [currentPreset, setCurrentPreset] = useState<TimerPreset>(
+    DEFAULT_PRESETS[0]
+  );
+  const [pomodoroCount, setPomodoroCount] = useState<number>(1);
   const [mode, setMode] = useState<TimerMode>("pomodoro");
-  const [timeLeft, setTimeLeft] = useState(
-    currentPreset.settings.pomodoroLength
-  ); // 计时器剩余时间 秒
-  const [status, setStatus] = useState<TimerStatusValue>(TimerStatus.Stopped);
-  const [pomodoroCount, setPomodoroCount] = useState(0);
-  const startTimeRef = useRef<Date | null>(null);
 
-  const isRunning = status === TimerStatus.Running;
-  //   const isPaused = status === TimerStatus.Paused;
-  const isStopped = status === TimerStatus.Stopped;
+  const startTimeRef = useRef<Date | null>(null);
+  const timeLeftRef = useRef<number>(DEFAULT_PRESETS[0].pomodoroLength);
+
+  const timerRef = useRef<HTMLDivElement>(null);
+  const timerInterval = useRef<NodeJS.Timeout | null>(null);
+
+  const isRunning = timerStatus === TimerStatus.Running;
+  const isStopped = timerStatus === TimerStatus.Stopped;
 
   const getTimeForMode = useCallback(
     (mode: TimerMode) => {
       switch (mode) {
         case "pomodoro":
-          return currentPreset.settings.pomodoroLength;
+          return currentPreset.pomodoroLength;
         case "shortBreak":
-          return currentPreset.settings.shortBreakLength;
+          return currentPreset.shortBreakLength;
         case "longBreak":
-          return currentPreset.settings.longBreakLength;
+          return currentPreset.longBreakLength;
       }
     },
     [currentPreset]
   );
 
-  useEffect(() => {
-    if (isStopped) {
-      setTimeLeft(getTimeForMode(mode));
-      removeTimerLeftFromPageTitle();
+  const updateTimeLeft = useCallback((newTimeLeft: number) => {
+    if (timerRef.current) {
+      timeLeftRef.current = newTimeLeft;
+      timerRef.current.textContent = formatTime(newTimeLeft);
     }
-  }, [currentPreset.settings.pomodoroLength, isStopped, getTimeForMode, mode]);
+  }, []);
 
-  useEffect(() => {
-    // 计时器 每一种mode都使用该计时器，通过effect的更新来更新计时器
-    let interval: NodeJS.Timeout;
-    if (isRunning && timeLeft > 0) {
-      if (!startTimeRef.current) {
-        startTimeRef.current = new Date();
-        console.log("startTime::", startTimeRef.current);
-      }
-
-      interval = setTimeout(() => {
-        setTimeLeft((prev) => prev - 1);
-        addTimerLeftToPageTitle(timeLeft - 1);
-        clearTimeout(interval);
-      }, 1000);
+  const clearTimer = useCallback(() => {
+    if (timerInterval.current) {
+      clearTimeout(timerInterval.current);
     }
-    return () => clearTimeout(interval);
-  }, [isRunning, timeLeft]);
+  }, []);
 
-  useEffect(() => {
-    if (timeLeft === 0 && isRunning) {
-      // 计时器结束
-      setStatus(TimerStatus.Stopped);
+  const updateTimerAfterPomodoro = useCallback(() => {
+    const newCount = pomodoroCount + 1;
 
-      if (startTimeRef.current) {
-        // 记录计时器完成，计算时长，更新record
-        const duration = Math.round(getTimeForMode(mode) / 60);
+    setPomodoroCount(newCount);
 
-        const record: TimerRecord = {
-          id: Date.now().toString(),
-          startTime: startTimeRef.current.toISOString(),
-          duration,
-          type:
-            mode === "pomodoro"
-              ? "focus"
-              : mode === "shortBreak"
-              ? "shortBreak"
-              : "longBreak",
-          taskName: currentTask?.title,
-          skillIds: currentTask?.skills.map((skill) => skill.id),
-        };
-        console.log("record duration::", duration);
-        onRecordUpdate(record);
-        startTimeRef.current = null;
-      }
+    // 根据pomodoroCount来确定下一个mode
+    if (newCount % currentPreset.longBreakInterval === 0) {
+      setMode("longBreak");
+      updateTimeLeft(currentPreset.longBreakLength);
+    } else {
+      setMode("shortBreak");
+      updateTimeLeft(currentPreset.shortBreakLength);
+    }
 
-      if (mode === "pomodoro") {
-        const newCount = pomodoroCount + 1;
-        setPomodoroCount(newCount);
+    const duration = Math.round(getTimeForMode(mode) / 60);
 
-        // 根据pomodoroCount来确定下一个mode
-        if (newCount % currentPreset.settings.longBreakInterval === 0) {
-          setMode("longBreak");
-          setTimeLeft(currentPreset.settings.longBreakLength);
-          addTimerLeftToPageTitle(currentPreset.settings.longBreakLength);
-        } else {
-          setMode("shortBreak");
-          setTimeLeft(currentPreset.settings.shortBreakLength);
-          addTimerLeftToPageTitle(currentPreset.settings.shortBreakLength);
-        }
+    const record: TimerRecord = {
+      id: Date.now().toString(),
+      startTime: startTimeRef.current?.toISOString() || "",
+      endTime: new Date().toISOString(),
+      duration,
+      round: pomodoroCount,
+      type: mode,
+      taskId: currentTask?.id,
+      skillIds: currentTask?.skills?.map((skill) => skill.id),
+    };
+    console.log("record::", record);
+    onTimerComplete(record);
+  }, [
+    currentPreset.longBreakInterval,
+    currentPreset.longBreakLength,
+    currentPreset.shortBreakLength,
+    currentTask?.skills,
+    currentTask?.id,
+    getTimeForMode,
+    mode,
+    onTimerComplete,
+    pomodoroCount,
+    updateTimeLeft,
+  ]);
 
-        onComplete();
-      } else {
-        setMode("pomodoro");
-        setTimeLeft(currentPreset.settings.pomodoroLength);
-        addTimerLeftToPageTitle(currentPreset.settings.pomodoroLength);
-      }
-
-      toast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} completed!`);
-      playAudio();
+  const updateTimerAfterShortBreak = useCallback(() => {
+    if (pomodoroCount % currentPreset.longBreakInterval === 0) {
+      setMode("longBreak");
+      updateTimeLeft(currentPreset.longBreakLength);
+    } else {
+      setMode("pomodoro");
+      updateTimeLeft(currentPreset.pomodoroLength);
     }
   }, [
-    status,
-    getTimeForMode,
-    timeLeft,
-    mode,
-    onComplete,
-    currentPreset,
+    currentPreset.longBreakInterval,
+    currentPreset.longBreakLength,
+    currentPreset.pomodoroLength,
     pomodoroCount,
-    onRecordUpdate,
-    isRunning,
-    currentTask?.title,
-    currentTask?.skills,
+    updateTimeLeft,
+  ]);
+
+  const updateTimerAfterLongBreak = useCallback(() => {
+    setMode("pomodoro");
+    setPomodoroCount(1);
+    updateTimeLeft(currentPreset.pomodoroLength);
+  }, [currentPreset.pomodoroLength, updateTimeLeft]);
+
+  useEffect(() => {
+    // 启动Pomodoro倒计时
+    function updateTimer() {
+      clearTimer();
+      if (timerStatus === TimerStatus.Running) {
+        if (timeLeftRef.current > 0) {
+          // 继续计时
+          if (!startTimeRef.current) {
+            // 开始计时
+            startTimeRef.current = new Date();
+            console.log("startTime::", startTimeRef.current);
+          }
+          const newTimeLeft = timeLeftRef.current - 1;
+          updateTimeLeft(newTimeLeft);
+          addTimerLeftToPageTitle(newTimeLeft);
+          timerInterval.current = setTimeout(() => {
+            updateTimer();
+          }, 1000);
+        } else {
+          // 计时结束
+          // 判断接下来的阶段
+          removeTimerLeftFromPageTitle();
+          console.log("mode after timer end::", mode);
+          if (mode === "pomodoro") {
+            // 进入shortBreak 或者 longBreak
+            updateTimerAfterPomodoro();
+          }
+          if (mode === "shortBreak") {
+            // 进入longBreak 或者 pomodoro
+            updateTimerAfterShortBreak();
+          }
+          if (mode === "longBreak") {
+            // 进入pomodoro
+            updateTimerAfterLongBreak();
+          }
+
+          toast(`${mode.charAt(0).toUpperCase() + mode.slice(1)} completed!`);
+          playAudio();
+          setTimerStatus(TimerStatus.Stopped);
+        }
+      }
+    }
+    if (timerStatus === TimerStatus.Running) {
+      updateTimer();
+    } else {
+      clearTimer();
+    }
+    return () => {
+      clearTimer();
+    };
+  }, [
+    timerStatus,
+    updateTimeLeft,
+    clearTimer,
+    mode,
+    updateTimerAfterPomodoro,
+    updateTimerAfterShortBreak,
+    updateTimerAfterLongBreak,
   ]);
 
   // 当 currentPreset 变化时，重置所有状态
   useEffect(() => {
+    console.log("currentPreset::", currentPreset);
     if (currentPreset.id) {
+      setPomodoroCount(1);
       setMode("pomodoro");
-      setTimeLeft(currentPreset.settings.pomodoroLength);
-      setStatus(TimerStatus.Stopped);
-      setPomodoroCount(0);
+      updateTimeLeft(currentPreset.pomodoroLength);
       startTimeRef.current = null;
     }
-  }, [currentPreset.id, currentPreset.settings.pomodoroLength]);
+  }, [currentPreset, updateTimeLeft]);
+
+  useEffect(() => {
+    async function fetchPresets() {
+      const presets = await getTimerPresets();
+      console.log("presets in fetchPresets::", presets);
+      if (presets.length > 0) {
+        setCurrentPreset(presets[0]);
+      }
+    }
+    fetchPresets();
+  }, []);
 
   const handleModeChange = (newMode: TimerMode) => {
     setMode(newMode);
-    setTimeLeft(getTimeForMode(newMode));
-    setStatus(TimerStatus.Stopped);
+    updateTimeLeft(getTimeForMode(newMode));
     startTimeRef.current = null;
   };
 
   const handleStartPause = () => {
-    setStatus(isRunning ? TimerStatus.Paused : TimerStatus.Running);
-    if (!isRunning) {
-      startTimeRef.current = new Date();
-      console.log("startTimeRef.current::", startTimeRef.current);
+    if (
+      timerStatus === TimerStatus.Paused ||
+      timerStatus === TimerStatus.Stopped
+    ) {
+      setTimerStatus(TimerStatus.Running);
+    } else {
+      setTimerStatus(TimerStatus.Paused);
     }
   };
 
-  const handleReset = () => {
-    setTimeLeft(getTimeForMode(mode));
-    setStatus(TimerStatus.Stopped);
+  const handleReset = useCallback(() => {
     startTimeRef.current = null;
-  };
+    setTimerStatus(TimerStatus.Stopped);
+    setMode("pomodoro");
+    updateTimeLeft(getTimeForMode("pomodoro"));
+    clearTimer();
+    removeTimerLeftFromPageTitle();
+  }, [clearTimer, getTimeForMode, updateTimeLeft]);
+
+  console.log(" currentPreset in timer::", currentPreset);
 
   return (
     <Card className="w-full max-w-2xl p-6 space-y-6 relative bg-gradient-to-br from-background to-muted shadow-lg">
@@ -243,7 +307,7 @@ export function Timer({
             {TabItems.map((item) => (
               <TabsTrigger
                 key={item.value}
-                disabled={!isStopped}
+                disabled={timerStatus === TimerStatus.Running}
                 value={item.value}
                 className="text-base cursor-pointer"
               >
@@ -252,10 +316,11 @@ export function Timer({
             ))}
           </TabsList>
         </Tabs>
-        <TimerSettings
-          isStopped={isStopped}
-          preset={currentPreset}
-          onSave={onSettingsChange}
+        <TimerSetting
+          disabled={!isStopped}
+          currentPreset={currentPreset}
+          onPresetChange={(preset) => setCurrentPreset(preset)}
+          // onPresetUpdate={handlePresetUpdate}
         />
       </div>
 
@@ -268,15 +333,18 @@ export function Timer({
         </div>
       )}
 
-      <div className="text-7xl font-bold text-center tabular-nums tracking-tight">
-        {formatTime(timeLeft)}
+      <div
+        ref={timerRef}
+        className="text-7xl font-bold text-center tabular-nums tracking-tight"
+      >
+        25:00
       </div>
 
       <div
         className="flex items-center justify-center gap-2"
-        aria-label={`Pomodoro progress: ${pomodoroCount} of ${currentPreset.settings.longBreakInterval} sessions completed`}
+        aria-label={`Pomodoro progress: ${pomodoroCount} of ${currentPreset.longBreakInterval} sessions completed`}
       >
-        {Array.from({ length: currentPreset.settings.longBreakInterval }).map(
+        {Array.from({ length: currentPreset.longBreakInterval }).map(
           (_, index) => (
             <div
               key={index}

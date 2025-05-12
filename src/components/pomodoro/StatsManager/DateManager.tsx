@@ -37,7 +37,7 @@ export function DateManager({
 
     switch (value) {
       case "today":
-        onDateRangeChange({ from: now, to: now });
+        onDateRangeChange({ from, to: now });
         break;
       case "week":
         from.setDate(now.getDate() - 7);

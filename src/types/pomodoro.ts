@@ -23,7 +23,8 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  skills: Skill[];
+  skillIds?: string[];
+  skills?: Skill[];
   completed: boolean;
   pomodoroRatings: PomodoroRating[];
   createdAt: Date;
@@ -31,9 +32,15 @@ export interface Task {
 }
 
 export interface TimerPreset {
-  id: string;
+  id?: string;
   name: string;
-  settings: TimerSettings;
+  pomodoroLength: number; // 秒
+  shortBreakLength: number; // 秒
+  longBreakLength: number; // 秒
+  autoStartBreaks: boolean;
+  autoStartPomodoros: boolean;
+  longBreakInterval: number;
+  settings?: TimerSettings;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -81,8 +88,11 @@ export interface PomodoroStats {
 export interface TimerRecord {
   id: string;
   startTime: string;
+  endTime?: string;
   duration: number;
-  type: "focus" | "shortBreak" | "longBreak";
+  round: number;
+  type: "pomodoro" | "shortBreak" | "longBreak";
+  taskId?: string;
   taskName?: string;
   skillIds?: string[];
   skills?: Skill[];

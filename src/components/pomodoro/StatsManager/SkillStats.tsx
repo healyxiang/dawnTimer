@@ -43,7 +43,7 @@ export function SkillStats({ skills, timerRecords }: SkillStatsProps) {
       const duration = timerRecords
         .filter(
           (record) =>
-            record.type === "focus" && record.skillIds?.includes(skill.id)
+            record.type === "pomodoro" && record.skillIds?.includes(skill.id)
         )
         .reduce((sum, record) => sum + record.duration, 0);
 

@@ -30,12 +30,14 @@ const NoHistory = () => (
 
 export function HistoryStats({ timerRecords, skills }: HistoryStatsProps) {
   const typeColors = {
-    focus: "bg-blue-100 text-blue-800",
-    shortBreak: "bg-green-100 text-green-800",
-    longBreak: "bg-yellow-100 text-yellow-800",
+    pomodoro: "bg-blue-200 text-blue-800",
+    focus: "bg-blue-200 text-blue-800",
+    shortBreak: "bg-green-200 text-green-800",
+    longBreak: "bg-yellow-200 text-yellow-800",
   };
 
   const typeLabels = {
+    pomodoro: "Pomodoro",
     focus: "Focus",
     shortBreak: "Short Break",
     longBreak: "Long Break",
