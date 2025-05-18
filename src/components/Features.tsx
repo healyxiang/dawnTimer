@@ -1,5 +1,25 @@
 import { cn } from "@/lib/utils";
-import { Clock4, ChartNoAxesCombined, Zap } from "lucide-react";
+import { Clock4, ChartNoAxesCombined, List } from "lucide-react";
+
+const features = [
+  {
+    title: "Time Management",
+    description:
+      "Learn techniques to optimize your daily schedule and achieve more.",
+    icon: Clock4,
+  },
+  {
+    title: "Task Management",
+    description: "Create and manage tasks to stay on top of your work.",
+    icon: List,
+  },
+  {
+    title: "Efficiency",
+    description:
+      "Streamline your workflow and eliminate distractions for peak performance.",
+    icon: ChartNoAxesCombined,
+  },
+];
 
 export default function Features() {
   return (
@@ -9,34 +29,18 @@ export default function Features() {
           What DawnLibrary can do for you?
         </h2>
         <div className={cn("grid grid-cols-3 gap-8", "sm:grid-cols-1")}>
-          <div className="bg-white p-6 rounded-lg shadow-sm text-center border">
-            <div className="text-primary mb-4">
-              <Clock4 className="w-12 h-12 mx-auto" />
+          {features.map((feature) => (
+            <div
+              className="bg-white p-6 rounded-lg shadow-sm text-center border"
+              key={feature.title}
+            >
+              <div className="text-primary mb-4">
+                <feature.icon className="w-12 h-12 mx-auto" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <p className="text-gray-600">{feature.description}</p>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Time Management</h3>
-            <p className="text-gray-600">
-              Learn techniques to optimize your daily schedule and achieve more.
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm text-center border">
-            <div className="text-primary mb-4">
-              <Zap className="w-12 h-12 mx-auto" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Personal Growth</h3>
-            <p className="text-gray-600">
-              Unlock your potential with curated resources for self-improvement.
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm text-center border">
-            <div className="text-primary mb-4">
-              <ChartNoAxesCombined className="w-12 h-12 mx-auto" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Efficiency</h3>
-            <p className="text-gray-600">
-              Streamline your workflow and eliminate distractions for peak
-              performance.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1,15 +1,12 @@
 import { getCurrentUser } from "@/app/api/lib/auth";
 import prisma from "@/lib/prisma";
+import { getPomodoroRecordsByDB } from "@/app/api/lib/pomodoro";
 import { successResponse, apiResponses } from "@/lib/api-response";
 import { Prisma } from "@prisma/client";
 
 export async function GET() {
   try {
-    const user = await getCurrentUser();
-    const records = await prisma.timerRecord.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-    });
+    const records = await getPomodoroRecordsByDB();
     return successResponse(records);
   } catch (error) {
     console.error("Error fetching records:", error);
