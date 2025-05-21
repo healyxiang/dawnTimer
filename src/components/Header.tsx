@@ -1,4 +1,4 @@
-// import Image from 'next/image'
+import Image from "next/image";
 
 import siteMetadata from "@/data/siteMetadata";
 import headerNavLinks from "@/data/headerNavLinks";
@@ -6,6 +6,7 @@ import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
 import { ModeToggle } from "@/components/ThemeSwitch";
 import UserBtn from "@/components/UserBtn";
+// import Logo from ''
 // import LocaleSwitch from "@/components/LocaleSwitch";
 // import ThemeSwitch from "./ThemeSwitch";
 // import SearchButton from './SearchButton'
@@ -31,11 +32,21 @@ const Header = () => {
         className="text-primary"
       >
         <div className="flex items-center justify-between text-primary">
-          {/* <div className="mr-3">
-            <Image src={Logo} alt="Rednote Logo" width={40} height={40} />
-          </div> */}
+          <div className="mr-3">
+            <Image
+              src="/logo.svg"
+              alt="DawnLibrary Logo"
+              width={40}
+              height={40}
+            />
+          </div>
           {typeof siteMetadata.headerTitle === "string" ? (
-            <div className={cn("text-2xl font-semibold text-primary-500", "")}>
+            <div
+              className={cn(
+                "text-2xl font-semibold text-primary-500"
+                // "sm:hidden"
+              )}
+            >
               {siteMetadata.headerTitle}
             </div>
           ) : (
