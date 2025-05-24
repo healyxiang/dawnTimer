@@ -14,3 +14,27 @@ export async function getPomodoroRecordsByDB() {
     return [];
   }
 }
+
+export async function getTasksByDB() {
+  try {
+    const user = await getCurrentUser();
+    const tasks = await prisma.task.findMany({
+      where: { userId: user.id, isDeleted: false },
+      orderBy: { createdAt: "desc" },
+      include: {
+        skills: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            color: true,
+          },
+        },
+      },
+    });
+    return tasks;
+  } catch (error) {
+    console.error("getTasksByDB lib error:", error);
+    return [];
+  }
+}

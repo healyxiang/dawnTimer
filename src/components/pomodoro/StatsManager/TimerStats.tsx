@@ -1,17 +1,17 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Skill, Task, TimerRecord } from "@/types/pomodoro";
+import { Skill, TimerRecord } from "@/types/pomodoro";
 import { Clock } from "lucide-react";
 
 import { formatTime } from "@/lib/utils";
 import { SkillStats } from "./SkillStats";
-import { DateRangeRequired } from "./index";
+import { DateRangeRequired } from "./StatsManager";
 
 interface TimerStatsProps {
   timerRecords: TimerRecord[];
   skills: Skill[];
-  tasks: Task[];
+  // tasks: Task[];
   dateRange: DateRangeRequired;
 }
 
@@ -25,7 +25,7 @@ const CardItem = ({ title, value }: { title: string; value: number }) => (
 export function TimerStats({
   timerRecords,
   skills,
-  tasks,
+  // tasks,
   dateRange,
 }: TimerStatsProps) {
   const getAllTimeFocusTime = () => {
@@ -96,7 +96,7 @@ export function TimerStats({
           <CardItem title="All Time" value={allTimeFocus} />
         </div>
       </Card>
-      {skills.length > 0 && tasks.length > 0 && (
+      {skills.length > 0 && (
         <SkillStats skills={skills} timerRecords={timerRecords} />
       )}
     </div>
