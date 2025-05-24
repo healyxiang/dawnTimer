@@ -16,7 +16,9 @@ import {
 interface SkillDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (skill: Omit<Skill, "id" | "createdAt" | "updatedAt">) => void;
+  onSubmit: (
+    skill: Omit<Skill, "id" | "createdAt" | "updatedAt" | "description">
+  ) => void;
 }
 
 export function SkillDialog({ isOpen, onClose, onSubmit }: SkillDialogProps) {
@@ -27,7 +29,7 @@ export function SkillDialog({ isOpen, onClose, onSubmit }: SkillDialogProps) {
     e.preventDefault();
     onSubmit({
       name: name.trim(),
-      color,
+      color: color.trim() || "#3b82f6",
     });
     setName("");
     setColor("#3b82f6");

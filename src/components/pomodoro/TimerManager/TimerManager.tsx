@@ -4,26 +4,15 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  TimerMode,
-  Task,
-  TimerRecord,
-  TimerPreset,
-  // TimerPresetWithoutNameAndCreatedAt,
-} from "@/types/pomodoro";
+import { TimerMode, TimerRecord, TimerPreset } from "@/types/pomodoro";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TimerSetting } from "./TimerSetting";
+import { TimerSetting } from "../TimerSetting";
 import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 import { FOCUS_TIMER_TDK, AUDIO_FILES } from "@/constants/common";
 
-import { getTimerPresets } from "@/service/pomodoro";
-
-interface TimerProps {
-  onComplete: () => void;
-  onTimerComplete: (record: TimerRecord) => void;
-  currentTask?: Task;
-}
+import { getTimerPresets, addTimerRecord } from "@/service/pomodoro";
+import { useCurrentTaskStore } from "@/store/currentTask";
 
 const TimerStatus = {
   Running: "running",
@@ -76,7 +65,7 @@ function playAudio() {
     });
 }
 
-export function Timer({ currentTask, onTimerComplete }: TimerProps) {
+export function TimerManager() {
   const [timerStatus, setTimerStatus] = useState<TimerStatusValue>(
     TimerStatus.Stopped
   );
@@ -86,6 +75,8 @@ export function Timer({ currentTask, onTimerComplete }: TimerProps) {
   const [pomodoroCount, setPomodoroCount] = useState<number>(1);
   const [mode, setMode] = useState<TimerMode>("pomodoro");
 
+  const { currentTask } = useCurrentTaskStore();
+
   const startTimeRef = useRef<Date | null>(null);
   const timeLeftRef = useRef<number>(DEFAULT_PRESETS[0].pomodoroLength);
 
@@ -94,6 +85,22 @@ export function Timer({ currentTask, onTimerComplete }: TimerProps) {
 
   const isRunning = timerStatus === TimerStatus.Running;
   const isStopped = timerStatus === TimerStatus.Stopped;
+
+  const handleTimerComplete = useCallback(async (record: TimerRecord) => {
+    // if (!currentTask) {
+    //   toast.error("No task selected");
+    //   return;
+    // }
+
+    try {
+      // 更新计时记录
+      await addTimerRecord(record);
+      // setTimerRecords((prev) => [...prev, record]);
+    } catch (error) {
+      console.error("Error handling timer complete:", error);
+      toast.error("Failed to save timer record");
+    }
+  }, []);
 
   const getTimeForMode = useCallback(
     (mode: TimerMode) => {
@@ -149,7 +156,7 @@ export function Timer({ currentTask, onTimerComplete }: TimerProps) {
       skillIds: currentTask?.skills?.map((skill) => skill.id),
     };
     console.log("record::", record);
-    onTimerComplete(record);
+    handleTimerComplete(record);
   }, [
     currentPreset.longBreakInterval,
     currentPreset.longBreakLength,
@@ -158,7 +165,7 @@ export function Timer({ currentTask, onTimerComplete }: TimerProps) {
     currentTask?.id,
     getTimeForMode,
     mode,
-    onTimerComplete,
+    handleTimerComplete,
     pomodoroCount,
     updateTimeLeft,
   ]);

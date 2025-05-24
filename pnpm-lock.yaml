@@ -44,6 +44,9 @@ dependencies:
   '@tailwindcss/typography':
     specifier: ^0.5.16
     version: 0.5.16(tailwindcss@4.0.9)
+  '@tanstack/react-query':
+    specifier: ^5.76.2
+    version: 5.76.2(react@19.0.0)
   '@xyflow/react':
     specifier: ^12.6.1
     version: 12.6.1(@types/react@19.0.10)(react-dom@19.0.0)(react@19.0.0)
@@ -116,6 +119,9 @@ dependencies:
   tailwindcss-animate:
     specifier: ^1.0.7
     version: 1.0.7(tailwindcss@4.0.9)
+  zustand:
+    specifier: ^5.0.5
+    version: 5.0.5(@types/react@19.0.10)(react@19.0.0)
 
 devDependencies:
   '@eslint/eslintrc':
@@ -2634,6 +2640,19 @@ packages:
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.0.9
+    dev: false
+
+  /@tanstack/query-core@5.76.2:
+    resolution: {integrity: sha512-PFGwWh5ss9cJQ67l6bZ7hqXbisX2gy13G2jP+VGY1bgdbCfOMWh6UBVnN62QbFXro6CCoX9hYzTnZHr6Rz00YQ==}
+    dev: false
+
+  /@tanstack/react-query@5.76.2(react@19.0.0):
+    resolution: {integrity: sha512-rGkWberCrFdIxMdvSAJM/UOKeu0O/JVTbMmfhQoJpiU9Uq0EDx2EMCadnNuJWbXR4smDA2t7DY3NKkYFmDVS5A==}
+    peerDependencies:
+      react: ^18 || ^19
+    dependencies:
+      '@tanstack/query-core': 5.76.2
+      react: 19.0.0
     dev: false
 
   /@tanstack/react-virtual@3.13.2(react-dom@19.0.0)(react@19.0.0):
@@ -7706,6 +7725,28 @@ packages:
       '@types/react': 19.0.10
       react: 19.0.0
       use-sync-external-store: 1.5.0(react@19.0.0)
+    dev: false
+
+  /zustand@5.0.5(@types/react@19.0.10)(react@19.0.0):
+    resolution: {integrity: sha512-mILtRfKW9xM47hqxGIxCv12gXusoY/xTSHBYApXozR0HmQv299whhBeeAcRy+KrPPybzosvJBCOmVjq6x12fCg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+    dependencies:
+      '@types/react': 19.0.10
+      react: 19.0.0
     dev: false
 
   /zwitch@2.0.4:

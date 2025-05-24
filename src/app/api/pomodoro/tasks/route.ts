@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/app/api/lib/auth";
+import { getTasksByDB } from "@/app/api/lib/pomodoro";
 import prisma from "@/lib/prisma";
 import { successResponse, apiResponses } from "@/lib/api-response";
 import { Prisma } from "@prisma/client";
@@ -6,20 +7,7 @@ import { Prisma } from "@prisma/client";
 // GET /api/pomodoro/tasks
 export async function GET() {
   try {
-    const user = await getCurrentUser();
-    const tasks = await prisma.task.findMany({
-      where: { userId: user.id, isDeleted: false },
-      orderBy: { createdAt: "desc" },
-      include: {
-        skills: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-      },
-    });
+    const tasks = await getTasksByDB();
     return successResponse(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error);

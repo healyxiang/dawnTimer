@@ -13,20 +13,21 @@ export interface PomodoroRating {
 export interface Skill {
   id: string;
   name: string;
+  // description: null | string;
   color: string;
   icon?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Task {
   id: string;
   title: string;
-  description?: string;
+  description: string | null;
   skillIds?: string[];
-  skills?: Skill[];
+  skills?: Omit<Skill, "createdAt" | "updatedAt" | "description">[];
   completed: boolean;
-  pomodoroRatings: PomodoroRating[];
+  // pomodoroRatings: PomodoroRating[];
   createdAt: Date;
   updatedAt: Date;
 }
