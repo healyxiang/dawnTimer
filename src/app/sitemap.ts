@@ -8,7 +8,7 @@ import siteMetadata from "@/data/siteMetadata";
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = siteMetadata.siteUrl;
   const blogRoutes = allPosts.map((post) => ({
-    url: `${siteUrl}/${post.url}`,
+    url: `${siteUrl}${post.url.startsWith("/") ? post.url : `/${post.url}`}`,
     lastModified: post.date,
   }));
 
