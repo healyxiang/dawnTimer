@@ -1,4 +1,7 @@
 import { allPosts, allDePosts, allCsPosts } from "contentlayer/generated";
+// import { MDXLayoutRenderer } from "pliny/mdx-components";
+// import { components } from "@/components/MDXComponents";
+
 import { redirect } from "next/navigation";
 import PostSimple from "@/components/blog/layouts/PostSimple";
 import { BlogContent } from "@/components/blog/BlogContent";
