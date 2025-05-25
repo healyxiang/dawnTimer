@@ -6,6 +6,7 @@ interface BlogContentProps {
 }
 
 export function BlogContent({ html, className }: BlogContentProps) {
+  // 处理 HTML 中的图片标签
   return (
     <article
       className={cn(
@@ -13,8 +14,8 @@ export function BlogContent({ html, className }: BlogContentProps) {
         "prose dark:prose-invert max-w-none",
         // 标题样式
         "prose-headings:scroll-mt-20 prose-headings:font-bold prose-headings:tracking-tight",
-        "prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:mt-0",
-        "prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4",
+        "prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4",
+        "prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-4",
         // 段落样式
         "prose-p:leading-7",
         // 列表样式
@@ -35,6 +36,7 @@ export function BlogContent({ html, className }: BlogContentProps) {
         "prose-hr:my-8 prose-hr:border-muted",
         // 间距控制
         "[&>*:last-child]:mb-0 [&>*]:mb-3",
+        "prose-img:mx-auto prose-img:w-1/2",
         // 自定义类名
         className
       )}
