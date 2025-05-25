@@ -11,7 +11,7 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { TimerRecord } from "@/types/pomodoro";
-import { DateRangeRequired } from "./index";
+import { DateRangeRequired } from "./StatsManager";
 const DateSelectRanges = [
   { label: "Today", value: "today" },
   { label: "Week", value: "week" },
