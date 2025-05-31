@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skill, TimerRecord } from "@/types/pomodoro";
@@ -9,11 +9,13 @@ import { NonUndefined } from "@/types/common";
 import { TimerStats } from "./TimerStats";
 import { HistoryStats } from "./HistoryStats";
 import { DateManager } from "./DateManager";
+import { getUser } from "@/service/user";
+import { getSkills, getTimerRecords } from "@/service/pomodoro";
 
 interface StatsManagerProps {
   // tasks: Task[];
-  skills: Skill[];
-  timerRecords: TimerRecord[];
+  initialSkills: Skill[];
+  initialTimerRecords: TimerRecord[];
 }
 
 export type DateRangeRequired = {
@@ -22,9 +24,12 @@ export type DateRangeRequired = {
 
 export function StatsManager({
   // tasks,
-  skills,
-  timerRecords,
+  initialSkills,
+  initialTimerRecords,
 }: StatsManagerProps) {
+  const [skills, setSkills] = useState<Skill[]>(initialSkills);
+  const [timerRecords, setTimerRecords] =
+    useState<TimerRecord[]>(initialTimerRecords);
   const [dateRange, setDateRange] = useState<DateRangeRequired>({
     from: new Date(new Date().setHours(0, 0, 0, 0)),
     to: new Date(new Date().setHours(23, 59, 59, 999)),
@@ -35,6 +40,32 @@ export function StatsManager({
     const recordDate = new Date(record.startTime);
     return recordDate >= dateRange.from && recordDate <= dateRange.to;
   });
+
+  const fetchBaseData = useCallback(async () => {
+    const user = await getUser();
+    const isLocalUser = user?.hasOwnProperty("isLocalUser");
+    if (!isLocalUser) {
+      return;
+    }
+    const [skills, timerRecords] = await Promise.all([
+      getSkills(),
+      getTimerRecords(),
+    ]);
+    console.log("timerRecords timerRecords:", timerRecords);
+    setSkills(skills);
+    setTimerRecords(timerRecords);
+  }, []);
+
+  useEffect(() => {
+    fetchBaseData();
+    console.log("skills::", skills);
+  }, []);
+
+  useEffect(() => {
+    if (dateRange) {
+      fetchBaseData();
+    }
+  }, [dateRange]);
 
   return (
     <Card className="p-6 space-y-6 bg-card/50">

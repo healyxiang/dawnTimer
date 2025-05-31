@@ -7,45 +7,128 @@ import {
   TimerPreset,
   TimerPresetWithoutNameAndCreatedAt,
 } from "@/types/pomodoro";
+import { BaseModel } from "@/types/common";
+import { DEFAULT_PRESETS } from "@/constants/pomodoro";
+import { localStorageUtils } from "@/lib/localStorage";
+import { getUser } from "./user";
 
-import { DEFAULT_TIMER_SETTINGS, DEFAULT_PRESETS } from "@/constants/pomodoro";
+// 通用的数据获取函数
+const fetchData = async <T extends BaseModel>(
+  endpoint: string,
+  method: string = "GET",
+  body?: Record<string, unknown>
+): Promise<T[]> => {
+  const user = await getUser();
+  const isLocalUser = user?.hasOwnProperty("isLocalUser");
 
-// Timer Records
-export const getTimerRecords = async (): Promise<TimerRecord[]> => {
+  // 如果是本地用户，从 localStorage 获取数据
+  if (isLocalUser) {
+    const localData = localStorageUtils.getLocalData<T[]>(endpoint);
+    return localData || [];
+  }
+
+  // 如果是登录用户，从 API 获取数据
   try {
-    const response = await fetch("/api/pomodoro/records");
+    const response = await fetch(`/api/pomodoro/${endpoint}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
     const result = await response.json();
     if (result.code === 200) {
       return result.data;
     }
     throw new Error(result.message);
   } catch (error) {
-    console.error("Error fetching timer records:", error);
+    console.error(`Error fetching ${endpoint}:`, error);
     return [];
   }
 };
 
-export const addTimerRecord = async (record: TimerRecord): Promise<void> => {
+// 通用的数据保存函数
+const saveData = async <T extends BaseModel>(
+  endpoint: string,
+  data: Partial<T>,
+  method: string = "POST"
+): Promise<T | null> => {
+  const user = await getUser();
+  const isLocalUser = user?.hasOwnProperty("isLocalUser");
+
+  // 如果是本地用户，保存到 localStorage
+  if (isLocalUser) {
+    // 获取现有数据
+    const existingData = localStorageUtils.getLocalData<T[]>(endpoint) || [];
+
+    if (method === "POST") {
+      // 添加新数据
+      const newItem = {
+        ...data,
+        id: `local_${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as unknown as T;
+      const newData = [...existingData, newItem];
+      localStorageUtils.setLocalData(endpoint, newData);
+      return newItem;
+    } else if (method === "PUT" && data.id) {
+      // 更新现有数据
+      const updatedData = existingData.map((item) =>
+        item.id === data.id
+          ? {
+              ...item,
+              ...data,
+              updatedAt: new Date().toISOString(),
+            }
+          : item
+      );
+      localStorageUtils.setLocalData(endpoint, updatedData);
+      return updatedData.find((item) => item.id === data.id) || null;
+    }
+    return null;
+  }
+
+  // 如果是登录用户，保存到 API
   try {
-    // localStorage.setItem(key, JSON.stringify(value));
-    const response = await fetch("/api/pomodoro/records", {
-      method: "POST",
+    const response = await fetch(`/api/pomodoro/${endpoint}`, {
+      method,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(record),
+      body: JSON.stringify(data),
     });
     const result = await response.json();
-    if (result.code !== 200) {
-      throw new Error(result.message);
+    if (result.code === 200) {
+      return result.data;
     }
+    throw new Error(result.message);
   } catch (error) {
-    console.error("Error adding timer record:", error);
-    throw error;
+    console.error(`Error saving ${endpoint}:`, error);
+    return null;
   }
 };
 
+// Timer Records
+export const getTimerRecords = async (): Promise<TimerRecord[]> => {
+  return fetchData<TimerRecord>("records");
+};
+
+export const addTimerRecord = async (
+  record: Omit<TimerRecord, "id" | "createdAt" | "updatedAt">
+): Promise<void> => {
+  await saveData<TimerRecord>("records", record);
+};
+
 export const clearTimerRecords = async (): Promise<void> => {
+  const user = await getUser();
+  const isLocalUser = user?.hasOwnProperty("isLocalUser");
+
+  if (isLocalUser) {
+    localStorageUtils.clearLocalData("records");
+    return;
+  }
+
   try {
     const response = await fetch("/api/pomodoro/records", {
       method: "DELETE",
@@ -62,65 +145,37 @@ export const clearTimerRecords = async (): Promise<void> => {
 
 // Tasks
 export const getTasks = async (): Promise<Task[]> => {
-  try {
-    const response = await fetch("/api/pomodoro/tasks");
-    const result = await response.json();
-    if (result.code === 200) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    return [];
-  }
+  return fetchData<Task>("tasks");
 };
 
 export const addTask = async (
   task: Omit<Task, "id" | "pomodoroRatings" | "createdAt" | "updatedAt">
 ): Promise<Task> => {
-  try {
-    const response = await fetch("/api/pomodoro/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(task),
-    });
-    const result = await response.json();
-    if (result.code === 200) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error adding task:", error);
-    throw error;
+  const result = await saveData<Task>("tasks", task);
+  if (!result) {
+    throw new Error("Failed to add task");
   }
+  return result;
 };
 
 export const updateTask = async (
   taskId: string,
   updates: Partial<Task>
 ): Promise<Task | null> => {
-  try {
-    const response = await fetch("/api/pomodoro/tasks", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: taskId, ...updates }),
-    });
-    const result = await response.json();
-    if (result.code === 200) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error updating task:", error);
-    return null;
-  }
+  return saveData<Task>("tasks", { id: taskId, ...updates }, "PUT");
 };
 
 export const deleteTask = async (taskId: string): Promise<void> => {
+  const user = await getUser();
+  const isLocalUser = user?.hasOwnProperty("isLocalUser");
+
+  if (isLocalUser) {
+    const tasks = await getTasks();
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    localStorageUtils.setLocalData("tasks", updatedTasks);
+    return;
+  }
+
   try {
     const response = await fetch(`/api/pomodoro/tasks?id=${taskId}`, {
       method: "DELETE",
@@ -137,65 +192,37 @@ export const deleteTask = async (taskId: string): Promise<void> => {
 
 // Skills
 export const getSkills = async (): Promise<Skill[]> => {
-  try {
-    const response = await fetch("/api/pomodoro/skills");
-    const result = await response.json();
-    if (result.code === 200) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error fetching skills:", error);
-    return [];
-  }
+  return fetchData<Skill>("skills");
 };
 
 export const addSkill = async (
   skill: Omit<Skill, "id" | "createdAt" | "updatedAt">
 ): Promise<Skill> => {
-  try {
-    const response = await fetch("/api/pomodoro/skills", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(skill),
-    });
-    const result = await response.json();
-    if (result.code === 200) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error adding skill:", error);
-    throw error;
+  const result = await saveData<Skill>("skills", skill);
+  if (!result) {
+    throw new Error("Failed to add skill");
   }
+  return result;
 };
 
 export const updateSkill = async (
   skillId: string,
   updates: Partial<Skill>
 ): Promise<Skill | null> => {
-  try {
-    const response = await fetch("/api/pomodoro/skills", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: skillId, ...updates }),
-    });
-    const result = await response.json();
-    if (result.code === 200) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error updating skill:", error);
-    return null;
-  }
+  return saveData<Skill>("skills", { id: skillId, ...updates }, "PUT");
 };
 
 export const deleteSkill = async (skillId: string): Promise<void> => {
+  const user = await getUser();
+  const isLocalUser = user?.hasOwnProperty("isLocalUser");
+
+  if (isLocalUser) {
+    const skills = await getSkills();
+    const updatedSkills = skills.filter((skill) => skill.id !== skillId);
+    localStorageUtils.setLocalData("skills", updatedSkills);
+    return;
+  }
+
   try {
     const response = await fetch(`/api/pomodoro/skills?id=${skillId}`, {
       method: "DELETE",
@@ -211,7 +238,19 @@ export const deleteSkill = async (skillId: string): Promise<void> => {
 };
 
 // Timer Settings
-export const getTimerSettings = async (): Promise<TimerSettings> => {
+export const getTimerSettings = async (): Promise<TimerPreset> => {
+  const user = await getUser();
+  const isLocalUser = user?.hasOwnProperty("isLocalUser");
+
+  if (isLocalUser) {
+    const localSettings =
+      localStorageUtils.getLocalData<TimerPreset>("settings");
+    if (localSettings) {
+      return localSettings;
+    }
+    return DEFAULT_PRESETS[0];
+  }
+
   try {
     const response = await fetch("/api/pomodoro/presets");
     const result = await response.json();
@@ -221,6 +260,7 @@ export const getTimerSettings = async (): Promise<TimerSettings> => {
       const currentPreset =
         presets.find((p: TimerPreset) => p.id === lastPresetId) || presets[0];
       return {
+        ...currentPreset,
         pomodoroLength: currentPreset.pomodoroLength,
         shortBreakLength: currentPreset.shortBreakLength,
         longBreakLength: currentPreset.longBreakLength,
@@ -232,7 +272,7 @@ export const getTimerSettings = async (): Promise<TimerSettings> => {
     throw new Error(result.message);
   } catch (error) {
     console.error("Error fetching timer settings:", error);
-    return DEFAULT_TIMER_SETTINGS;
+    return DEFAULT_PRESETS[0];
   }
 };
 
@@ -367,6 +407,20 @@ export const updateTimerPreset = async (
   preset: Omit<TimerPreset, "createdAt" | "updatedAt">
 ): Promise<TimerPreset | null> => {
   try {
+    const user = await getUser();
+    const isLocalUser = user?.hasOwnProperty("isLocalUser");
+
+    if (isLocalUser) {
+      const newPreset: TimerPreset = {
+        ...preset,
+        id: preset?.id || "classic",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      localStorageUtils.setLocalData("settings", newPreset);
+      return newPreset;
+    }
+
     const presetId = preset.id;
     const response = await fetch("/api/pomodoro/presets", {
       method: presetId ? "PUT" : "POST", // 如果presetId存在，则更新，否则创建

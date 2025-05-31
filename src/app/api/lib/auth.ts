@@ -12,8 +12,11 @@ export async function getCurrentUser() {
       user: session?.user,
     });
 
+    // if (!session?.user?.email) {
+    //   throw new Error("No authenticated user found");
+    // }
     if (!session?.user?.email) {
-      throw new Error("No authenticated user found");
+      return null;
     }
 
     const user = await prisma.user.findUnique({

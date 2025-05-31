@@ -4,6 +4,9 @@ import { getCurrentUser } from "@/app/api/lib/auth";
 
 export async function getTimerRecords() {
   const user = await getCurrentUser();
+  if (!user) {
+    return [];
+  }
   return prisma.timerRecord.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
@@ -21,6 +24,9 @@ export async function createTimerRecord(data: {
   round?: number;
 }) {
   const user = await getCurrentUser();
+  if (!user) {
+    return null;
+  }
   const recordData: Prisma.TimerRecordCreateInput = {
     duration: data.duration,
     type: data.type,
@@ -40,6 +46,9 @@ export async function createTimerRecord(data: {
 
 export async function deleteAllTimerRecords() {
   const user = await getCurrentUser();
+  if (!user) {
+    return null;
+  }
   return prisma.timerRecord.deleteMany({
     where: { userId: user.id },
   });
