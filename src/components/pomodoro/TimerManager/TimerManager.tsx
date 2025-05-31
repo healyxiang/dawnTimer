@@ -11,7 +11,7 @@ import { TimerSetting } from "../TimerSetting";
 import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 import { FOCUS_TIMER_TDK, AUDIO_FILES } from "@/constants/common";
 
-import { getTimerPresets, addTimerRecord } from "@/service/pomodoro";
+import { getTimerSettings, addTimerRecord } from "@/service/pomodoro";
 import { useCurrentTaskStore } from "@/store/currentTask";
 
 const TimerStatus = {
@@ -265,10 +265,10 @@ export function TimerManager() {
 
   useEffect(() => {
     async function fetchPresets() {
-      const presets = await getTimerPresets();
+      const presets = await getTimerSettings();
       console.log("presets in fetchPresets::", presets);
-      if (presets.length > 0) {
-        setCurrentPreset(presets[0]);
+      if (presets) {
+        setCurrentPreset(presets);
       }
     }
     fetchPresets();
@@ -341,6 +341,7 @@ export function TimerManager() {
       )}
 
       <div
+        // 定时器直接修改dom
         ref={timerRef}
         className="text-7xl font-bold text-center tabular-nums tracking-tight"
       >

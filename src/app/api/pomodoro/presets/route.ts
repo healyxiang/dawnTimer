@@ -8,6 +8,9 @@ import { Prisma } from "@prisma/client";
 export async function GET() {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return apiResponses.unauthorized();
+    }
     const presets = await prisma.timerPreset.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },

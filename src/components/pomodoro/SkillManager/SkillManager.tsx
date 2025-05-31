@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
+import { getSkills } from "@/service/pomodoro";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +54,16 @@ export function SkillManager({ skills: initialSkills }: SkillManagerProps) {
       console.error("Error deleting skill:", error);
     }
   };
+
+  useEffect(() => {
+    if (initialSkills.length === 0) {
+      const fetchSkills = async () => {
+        const skills = await getSkills();
+        setSkills(skills);
+      };
+      fetchSkills();
+    }
+  }, [initialSkills.length]);
 
   return (
     <Card className="p-4 space-y-4 bg-card/50">

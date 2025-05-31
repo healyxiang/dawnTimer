@@ -5,6 +5,9 @@ import { getCurrentUser } from "@/app/api/lib/auth";
 
 export async function getSkills() {
   const user = await getCurrentUser();
+  if (!user) {
+    return [];
+  }
   return prisma.skill.findMany({
     where: { userId: user.id, isDeleted: false },
     orderBy: { createdAt: "desc" },
@@ -17,6 +20,9 @@ export async function createSkill(data: {
   color: string;
 }) {
   const user = await getCurrentUser();
+  if (!user) {
+    return null;
+  }
   const skillData: Prisma.SkillCreateInput = {
     name: data.name,
     description: data.description,
@@ -35,6 +41,9 @@ export async function updateSkill(data: {
   description?: string;
 }) {
   const user = await getCurrentUser();
+  if (!user) {
+    return null;
+  }
   const skillData: Prisma.SkillUpdateInput = {
     name: data.name,
     description: data.description,
@@ -51,6 +60,9 @@ export async function updateSkill(data: {
 
 export async function deleteSkill(id: string) {
   const user = await getCurrentUser();
+  if (!user) {
+    return null;
+  }
   return prisma.skill.update({
     where: {
       id,

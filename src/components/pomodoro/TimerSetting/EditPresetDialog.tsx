@@ -18,7 +18,7 @@ interface EditPresetDialogProps {
   isOpen: boolean;
   onClose: () => void;
   currentPreset: TimerPreset;
-  onDeletePreset: (presetId: string) => void;
+  // onDeletePreset: (presetId: string) => void;
   onPresetUpdate: (preset: TimerPreset) => void;
 }
 

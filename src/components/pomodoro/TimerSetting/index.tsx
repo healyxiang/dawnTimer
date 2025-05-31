@@ -1,7 +1,7 @@
 // src/components/pomodoro/TimerSetting.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { TimerPreset } from "@/types/pomodoro";
 import { Settings } from "lucide-react";
@@ -14,18 +14,18 @@ import { toast } from "sonner";
 //   DropdownMenuItem,
 //   DropdownMenuTrigger,
 // } from "@/components/ui/dropdown-menu";
-import { DEFAULT_PRESETS } from "@/constants/pomodoro";
+// import { DEFAULT_PRESETS } from "@/constants/pomodoro";
 
 import {
-  getTimerPresets,
-  addTimerPreset,
-  deleteTimerPreset,
+  // getTimerPresets,
+  // addTimerPreset,
+  // deleteTimerPreset,
   updateTimerPreset,
 } from "@/service/pomodoro";
 
-import { ChangePresetDialog } from "./ChangePresetDialog";
+// import { ChangePresetDialog } from "./ChangePresetDialog";
 import { EditPresetDialog } from "./EditPresetDialog";
-import { AddPresetDialog } from "./AddPresetDialog";
+// import { AddPresetDialog } from "./AddPresetDialog";
 
 // const TimerSettingMode = {
 //   Create: "create",
@@ -49,62 +49,62 @@ export function TimerSetting({
   onPresetChange,
 }: // onPresetUpdate,
 TimerSettingProps) {
-  const [presets, setPresets] = useState<TimerPreset[]>(DEFAULT_PRESETS);
+  // const [presets, setPresets] = useState<TimerPreset[]>(DEFAULT_PRESETS);
 
-  const [isChangeDialogOpen, setIsChangeDialogOpen] = useState(false);
+  // const [isChangeDialogOpen, setIsChangeDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  // const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   console.log("currentPreset currentPreset:", currentPreset);
   // 初始化预设
-  useEffect(() => {
-    const loadPresets = async () => {
-      try {
-        const savedPresets = await getTimerPresets();
-        setPresets(savedPresets);
-      } catch (error) {
-        console.error("Failed to load timer presets:", error);
-        toast.error("Failed to load timer presets");
-      }
-    };
-    loadPresets();
-  }, []);
+  // useEffect(() => {
+  //   const loadPresets = async () => {
+  //     try {
+  //       const savedPresets = await getTimerPresets();
+  //       setPresets(savedPresets);
+  //     } catch (error) {
+  //       console.error("Failed to load timer presets:", error);
+  //       toast.error("Failed to load timer presets");
+  //     }
+  //   };
+  //   loadPresets();
+  // }, []);
 
-  const handleCreateTimer = async (
-    preset: Omit<TimerPreset, "id" | "createdAt" | "updatedAt">
-  ) => {
-    try {
-      const newPreset = await addTimerPreset({
-        ...preset,
-        id: Date.now().toString(),
-      });
+  // const handleCreateTimer = async (
+  //   preset: Omit<TimerPreset, "id" | "createdAt" | "updatedAt">
+  // ) => {
+  //   try {
+  //     const newPreset = await addTimerPreset({
+  //       ...preset,
+  //       id: Date.now().toString(),
+  //     });
 
-      setPresets((prev) => [...prev, newPreset]);
-      toast.success("Timer created successfully");
-    } catch (error) {
-      console.error("Failed to create timer preset:", error);
-      toast.error("Failed to create timer");
-    }
-  };
+  //     setPresets((prev) => [...prev, newPreset]);
+  //     toast.success("Timer created successfully");
+  //   } catch (error) {
+  //     console.error("Failed to create timer preset:", error);
+  //     toast.error("Failed to create timer");
+  //   }
+  // };
 
-  const handleDeletePreset = async (presetId: string) => {
-    try {
-      await deleteTimerPreset(presetId);
-      setPresets((prev) => prev.filter((p) => p.id !== presetId));
-      toast.success("Preset deleted successfully");
-    } catch (error) {
-      console.error("Failed to delete preset:", error);
-      toast.error("Cannot delete default presets");
-    }
-  };
+  // const handleDeletePreset = async (presetId: string) => {
+  //   try {
+  //     await deleteTimerPreset(presetId);
+  //     setPresets((prev) => prev.filter((p) => p.id !== presetId));
+  //     toast.success("Preset deleted successfully");
+  //   } catch (error) {
+  //     console.error("Failed to delete preset:", error);
+  //     toast.error("Cannot delete default presets");
+  //   }
+  // };
 
   const handlePresetUpdate = async (preset: TimerPreset) => {
     try {
       const newPreset = await updateTimerPreset(preset);
       if (newPreset) {
         onPresetChange(newPreset);
-        setPresets((prev) =>
-          prev.map((p) => (p.id === preset.id ? newPreset : p))
-        );
+        // setPresets((prev) =>
+        //   prev.map((p) => (p.id === preset.id ? newPreset : p))
+        // );
         toast.success("Preset updated successfully");
       }
     } catch (error) {
@@ -145,26 +145,26 @@ TimerSettingProps) {
         </DropdownMenu> */}
       </div>
 
-      <ChangePresetDialog
+      {/* <ChangePresetDialog
         isOpen={isChangeDialogOpen}
         onClose={() => setIsChangeDialogOpen(false)}
         presets={presets}
         onPresetChange={onPresetChange}
-      />
+      /> */}
 
       <EditPresetDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
         currentPreset={currentPreset}
         onPresetUpdate={handlePresetUpdate}
-        onDeletePreset={handleDeletePreset}
+        // onDeletePreset={handleDeletePreset}
       />
 
-      <AddPresetDialog
+      {/* <AddPresetDialog
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
         onPresetAdd={handleCreateTimer}
-      />
+      /> */}
     </div>
   );
 }

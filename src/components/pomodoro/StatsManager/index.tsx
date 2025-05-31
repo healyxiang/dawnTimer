@@ -4,12 +4,18 @@ import { StatsManager } from "./StatsManager";
 import { TimerRecord } from "@/types/pomodoro";
 
 export default async function StatsManagerRSC() {
-  const rawTimerRecords = await getTimerRecords();
-  const skills = await getSkills();
+  // const rawTimerRecords = await getTimerRecords();
+  // const skills = await getSkills();
+  const [skills, rawTimerRecords] = await Promise.all([
+    getSkills(),
+    getTimerRecords(),
+  ]);
   const timerRecords = rawTimerRecords.map((record) => ({
     ...record,
     startTime: record?.startTime?.toISOString(),
     endTime: record?.endTime?.toISOString(),
   })) as TimerRecord[];
-  return <StatsManager skills={skills} timerRecords={timerRecords} />;
+  return (
+    <StatsManager initialSkills={skills} initialTimerRecords={timerRecords} />
+  );
 }

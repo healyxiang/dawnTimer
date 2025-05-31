@@ -4,6 +4,9 @@ import prisma from "@/lib/prisma";
 export async function getPomodoroRecordsByDB() {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return [];
+    }
     const records = await prisma.timerRecord.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -18,6 +21,9 @@ export async function getPomodoroRecordsByDB() {
 export async function getTasksByDB() {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return [];
+    }
     const tasks = await prisma.task.findMany({
       where: { userId: user.id, isDeleted: false },
       orderBy: { createdAt: "desc" },

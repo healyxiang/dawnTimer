@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 import { Card } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Task, Skill } from "@/types/pomodoro";
 import { Check, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { getTasks } from "@/service/pomodoro";
 import { TaskDialog } from "./TaskDialog";
 import { addTask, updateTask, deleteTask } from "@/service/pomodoro";
 import { useCurrentTaskStore } from "@/store/currentTask";
@@ -85,6 +85,17 @@ export function TaskManager({ tasks: initialTasks, skills }: TaskManagerProps) {
     if (selectedTaskType === "all") return true;
     return task.completed === (selectedTaskType === "completed");
   });
+
+  useEffect(() => {
+    if (initialTasks.length === 0) {
+      // 服务端没有数据，前端从接口获取，未登录用户使用本地数据
+      const fetchTasks = async () => {
+        const tasks = await getTasks();
+        setTasks(tasks);
+      };
+      fetchTasks();
+    }
+  }, [initialTasks.length]);
 
   return (
     <Card className="p-4 space-y-4 bg-card/50">
