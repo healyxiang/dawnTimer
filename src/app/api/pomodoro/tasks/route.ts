@@ -19,6 +19,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return apiResponses.badRequest("User did not login");
+    }
     const body = await request.json();
     const { title, description, skillIds } = body;
 
@@ -62,6 +65,9 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return apiResponses.badRequest("User did not login");
+    }
     const body = await request.json();
     const { id, title, description, skillId, presetId, completed } = body;
 
@@ -96,6 +102,9 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return apiResponses.badRequest("User did not login");
+    }
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

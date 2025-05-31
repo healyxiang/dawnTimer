@@ -29,6 +29,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return apiResponses.badRequest("User did not login");
+    }
     const body = await request.json();
     const {
       name,
@@ -65,6 +68,9 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return apiResponses.badRequest("User did not login");
+    }
     const body = await request.json();
     const { id, name, pomodoroLength, shortBreakLength, longBreakLength } =
       body;
@@ -105,6 +111,10 @@ export async function DELETE(request: Request) {
     const user = await getCurrentUser();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+
+    if (!user) {
+      return apiResponses.badRequest("User did not login");
+    }
 
     if (!id) {
       return apiResponses.badRequest("Preset ID is required");
