@@ -43,7 +43,7 @@ const Header = () => {
           {typeof siteMetadata.headerTitle === "string" ? (
             <div
               className={cn(
-                "text-2xl font-semibold text-primary-500"
+                "text-2xl font-semibold"
                 // "sm:hidden"
               )}
             >
@@ -73,7 +73,7 @@ const Header = () => {
                 key={link.title}
                 href={link.href}
                 className={cn(
-                  "m-1 block font-medium text-gray-900 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
+                  "m-1 block font-medium text-gray-900 hover:text-primary dark:text-gray-100 dark:hover:text-primary"
                 )}
               >
                 {link.title}
