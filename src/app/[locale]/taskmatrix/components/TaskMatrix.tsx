@@ -1,209 +1,220 @@
-// src/app/[locale]/taskmatrix/components/TaskMatrix.tsx
+"use client";
+import { useCallback, useState, useRef } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { TaskNode } from "./TaskNode";
+import { Quadrant } from "./Quadrant";
+import { TaskDialog } from "@/components/pomodoro/TaskManager/TaskDialog";
+import { Skill, Task, QuadrantType } from "@/types/pomodoro";
+import useTask from "@/hooks/useTask";
 
-// 动态导入，禁用 SSR
-import { useCallback, useRef } from "react";
-import {
-  ReactFlow,
-  Controls,
-  Background,
-  useNodesState,
-  useReactFlow,
-} from "@xyflow/react";
-// import { QuadrantNode } from "./QuadrantNode";
-// import { TaskNode } from "./TaskNode";
-// import { AxisNode } from "./AxisNode";
-import { X } from "lucide-react"; // 导入删除图标
-
-// const nodeTypes: NodeTypes = {
-//   quadrant: QuadrantNode,
-//   task: TaskNode,
-//   axis: AxisNode,
-// };
-
-const QuadrantGrid = () => {
-  const axisStyle = {
-    stroke: "#94a3b8",
-    strokeWidth: 2,
-  };
-
-  return (
-    <svg className="absolute w-full h-full">
-      {/* X轴 */}
-      <line x1="0" y1="50%" x2="100%" y2="50%" style={axisStyle} />
-      {/* Y轴 */}
-      <line x1="50%" y1="0" x2="50%" y2="100%" style={axisStyle} />
-      {/* 象限标签 */}
-      <text x="25%" y="25%" textAnchor="middle" fill="red" fontSize="14">
-        重要-紧急
-      </text>
-      <text x="75%" y="25%" textAnchor="middle" fill="#64748b" fontSize="14">
-        不重要-紧急
-      </text>
-      <text x="25%" y="75%" textAnchor="middle" fill="green" fontSize="14">
-        重要-不紧急
-      </text>
-      <text x="75%" y="75%" textAnchor="middle" fill="#64748b" fontSize="14">
-        不重要-不紧急
-      </text>
-    </svg>
-  );
-};
-
-// 任务节点类型
-const TaskNode = ({
-  data,
-  id,
-}: {
-  data: { label: string; priority: string };
-  id: string;
-}) => {
-  const { setNodes } = useReactFlow();
-
-  const handleDelete = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation(); // 阻止事件冒泡
-      setNodes((nodes) => nodes.filter((node) => node.id !== id));
-    },
-    [id, setNodes]
-  );
-
-  return (
-    <div className="p-3 bg-white rounded-lg shadow-md border border-gray-200 relative group">
-      <button
-        onClick={handleDelete}
-        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full 
-                 opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-        aria-label="删除任务"
-      >
-        <X className="w-3 h-3" />
-      </button>
-      <div className="font-medium text-sm">{data.label}</div>
-      <div className="text-sm text-gray-500">{data.priority}</div>
-    </div>
-  );
-};
-
-const nodeTypes = { task: TaskNode };
-
-// 判断点击位置属于哪个象限
-const getQuadrant = (
-  x: number,
-  y: number,
-  centerX: number,
-  centerY: number
-) => {
-  console.log("x y centerX centerY", x, y, centerX, centerY);
-
-  if (x < centerX && y < centerY) return "q1"; // 重要-紧急
-  if (x >= centerX && y < centerY) return "q2"; // 不重要-紧急
-  if (x < centerX && y >= centerY) return "q3"; // 重要-不紧急
-  return "q4"; // 不重要-不紧急
-};
-
-// 获取象限对应的任务数据
-const getQuadrantTaskData = (quadrant: string) => {
-  const data = {
-    q1: { label: "重要且紧急任务", priority: "高" },
-    q2: { label: "不重要但紧急任务", priority: "中" },
-    q3: { label: "重要但不紧急任务", priority: "高" },
-    q4: { label: "不重要不紧急任务", priority: "低" },
-  };
-  return data[quadrant as keyof typeof data];
-};
+// 模拟技能数据
+const mockSkills: Skill[] = [
+  { id: "1", name: "编程", color: "#3B82F6" },
+  { id: "2", name: "设计", color: "#10B981" },
+  { id: "3", name: "写作", color: "#F59E0B" },
+  { id: "4", name: "管理", color: "#EF4444" },
+];
 
 export const TaskMatrix = () => {
-  const flowContainerRef = useRef<HTMLDivElement>(null);
-  const { getViewport, screenToFlowPosition } = useReactFlow();
-  const [nodes, setNodes, onNodesChange] = useNodesState([
-    // 重要-紧急（第一象限）
-    {
-      id: "1",
-      type: "task",
-      position: { x: 0, y: 0 },
-      data: { label: "修复生产Bug", priority: "高" },
-    },
-    // 不重要-紧急（第二象限）
-    {
-      id: "2",
-      type: "task",
-      position: { x: 400, y: 100 },
-      data: { label: "回复邮件", priority: "中" },
-    },
-    // 重要-不紧急（第三象限）
-    {
-      id: "3",
-      type: "task",
-      position: { x: 100, y: 300 },
-      data: { label: "技术学习", priority: "高" },
-    },
-    // 不重要-不紧急（第四象限）
-    {
-      id: "4",
-      type: "task",
-      position: { x: 400, y: 300 },
-      data: { label: "整理文档", priority: "低" },
-    },
-  ]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
+  const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantType>("q1");
 
-  // 处理画布双击事件
-  const onDoubleClick = useCallback(
-    (event: React.MouseEvent) => {
-      // 获取点击位置相对于画布的坐标
-      const { x, y } = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
+  // Use the task hook with API calls
+  const { tasks, isLoading, error, addTask, updateTask, deleteTask } = useTask({
+    autoFetch: true, // 自动从 API 获取任务
+  });
 
-      // 获取视口信息
-      const viewport = getViewport();
-      console.log("viewport:", viewport);
-
-      // 计算中心点坐标
-      //   const centerX = -viewport.x / viewport.zoom;
-      //   const centerY = -viewport.y / viewport.zoom;
-      if (flowContainerRef.current) {
-        const { width, height } =
-          flowContainerRef.current.getBoundingClientRect();
-        const centerX = width / 2;
-        const centerY = height / 2;
-        // 判断象限
-        const quadrant = getQuadrant(x, y, centerX, centerY);
-        const taskData = getQuadrantTaskData(quadrant);
-
-        // 创建新节点
-        const newNode = {
-          id: `task-${Date.now()}`,
-          type: "task",
-          position: { x, y },
-          data: taskData,
-        };
-
-        // 添加新节点
-        setNodes((nds) => [...nds, newNode]);
+  // 删除任务
+  const handleDeleteTask = useCallback(
+    async (id: string) => {
+      try {
+        await deleteTask(id);
+      } catch (error) {
+        console.error("Error deleting task:", error);
       }
     },
-    [screenToFlowPosition, getViewport, setNodes]
+    [deleteTask]
   );
 
+  // 移动任务到新象限
+  const handleMoveTask = useCallback(
+    async (id: string, quadrant: QuadrantType) => {
+      try {
+        await updateTask(id, { quadrant });
+      } catch (error) {
+        console.error("Error moving task:", error);
+      }
+    },
+    [updateTask]
+  );
+
+  // 添加新任务到指定象限
+  const handleAddTask = useCallback((quadrant: QuadrantType) => {
+    setSelectedQuadrant(quadrant);
+    setEditingTask(undefined);
+    setIsDialogOpen(true);
+  }, []);
+
+  // 编辑任务
+  const handleEditTask = useCallback((task: Task) => {
+    setEditingTask(task);
+    setSelectedQuadrant(task.quadrant);
+    setIsDialogOpen(true);
+  }, []);
+
+  // 处理任务提交（创建或编辑）
+  const handleSubmitTask = useCallback(
+    async (
+      taskData: Omit<
+        Task,
+        "pomodoroRatings" | "createdAt" | "updatedAt" | "id"
+      > & {
+        id?: string;
+      }
+    ) => {
+      try {
+        if (editingTask) {
+          // 编辑现有任务
+          await updateTask(editingTask.id, {
+            title: taskData.title,
+            description: taskData.description,
+            skillIds: taskData.skillIds,
+            skills: taskData.skills,
+            completed: taskData.completed,
+            quadrant: taskData.quadrant,
+          });
+        } else {
+          // 创建新任务
+          await addTask({
+            ...taskData,
+            quadrant: selectedQuadrant, // 使用选中的象限
+          });
+        }
+        setIsDialogOpen(false);
+        setEditingTask(undefined);
+      } catch (error) {
+        console.error("Error submitting task:", error);
+        // 错误已在 hook 中处理并显示 toast
+      }
+    },
+    [editingTask, selectedQuadrant, addTask, updateTask]
+  );
+
+  // 按象限分组任务
+  const tasksByQuadrant = {
+    q1: tasks.filter((task) => task.quadrant === "q1"),
+    q2: tasks.filter((task) => task.quadrant === "q2"),
+    q3: tasks.filter((task) => task.quadrant === "q3"),
+    q4: tasks.filter((task) => task.quadrant === "q4"),
+  };
+
   return (
-    <div className="w-full h-[calc(100vh-8rem)]" ref={flowContainerRef}>
-      <ReactFlow
-        className="border"
-        nodes={nodes}
-        onNodesChange={onNodesChange}
-        onDoubleClick={onDoubleClick}
-        panOnDrag={false}
-        zoomOnDoubleClick={false}
-        nodeTypes={nodeTypes}
-        minZoom={1}
-        maxZoom={1}
-        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+    <DndProvider backend={HTML5Backend}>
+      <div
+        className="w-full border-gray-300 dark:border-gray-600 relative bg-gray-50 dark:bg-gray-900 rounded-lg p-4"
+        ref={containerRef}
       >
-        <QuadrantGrid />
-        <Background gap={40} size={2} />
-        <Controls />
-      </ReactFlow>
-    </div>
+        {/* Error display */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* 象限网格 */}
+        <div className="flex flex-col gap-1">
+          {/* 第一行 */}
+          <div className="flex gap-1 flex-1 min-h-1/2">
+            <Quadrant
+              quadrant="q1"
+              onDrop={handleMoveTask}
+              onAddTask={handleAddTask}
+              disabled={isLoading}
+            >
+              {tasksByQuadrant.q1.map((task) => (
+                <TaskNode
+                  key={task.id}
+                  task={task}
+                  onDelete={handleDeleteTask}
+                  onEdit={handleEditTask}
+                />
+              ))}
+            </Quadrant>
+
+            <Quadrant
+              quadrant="q2"
+              onDrop={handleMoveTask}
+              onAddTask={handleAddTask}
+              disabled={isLoading}
+            >
+              {tasksByQuadrant.q2.map((task) => (
+                <TaskNode
+                  key={task.id}
+                  task={task}
+                  onDelete={handleDeleteTask}
+                  onEdit={handleEditTask}
+                />
+              ))}
+            </Quadrant>
+          </div>
+
+          {/* 第二行 */}
+          <div className="flex gap-1 flex-1 min-h-1/2">
+            <Quadrant
+              quadrant="q3"
+              onDrop={handleMoveTask}
+              onAddTask={handleAddTask}
+              disabled={isLoading}
+            >
+              {tasksByQuadrant.q3.map((task) => (
+                <TaskNode
+                  key={task.id}
+                  task={task}
+                  onDelete={handleDeleteTask}
+                  onEdit={handleEditTask}
+                />
+              ))}
+            </Quadrant>
+
+            <Quadrant
+              quadrant="q4"
+              onDrop={handleMoveTask}
+              onAddTask={handleAddTask}
+              disabled={isLoading}
+            >
+              {tasksByQuadrant.q4.map((task) => (
+                <TaskNode
+                  key={task.id}
+                  task={task}
+                  onDelete={handleDeleteTask}
+                  onEdit={handleEditTask}
+                />
+              ))}
+            </Quadrant>
+          </div>
+        </div>
+
+        {/* TaskDialog */}
+        <TaskDialog
+          isOpen={isDialogOpen}
+          onClose={() => {
+            setIsDialogOpen(false);
+            setEditingTask(undefined);
+          }}
+          onSubmit={handleSubmitTask}
+          skills={mockSkills}
+          task={
+            editingTask
+              ? {
+                  ...editingTask,
+                }
+              : undefined
+          }
+        />
+      </div>
+    </DndProvider>
   );
 };

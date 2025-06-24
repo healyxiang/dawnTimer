@@ -2,6 +2,8 @@ export type TimerMode = "pomodoro" | "shortBreak" | "longBreak";
 
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
+export type QuadrantType = "q1" | "q2" | "q3" | "q4";
+
 export interface PomodoroRating {
   focus: Rating;
   completion: Rating;
@@ -26,6 +28,7 @@ export interface Task {
   description: string | null;
   skillIds?: string[];
   skills?: Omit<Skill, "createdAt" | "updatedAt" | "description">[];
+  quadrant: QuadrantType;
   completed: boolean;
   // pomodoroRatings: PomodoroRating[];
   createdAt: Date;
