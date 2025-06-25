@@ -78,6 +78,7 @@ export default function useTask(options: UseTaskOptions = {}): UseTaskReturn {
 
     try {
       const fetchedTasks = await getTasks();
+      console.log("fetchedTasks in useTask:", fetchedTasks);
       setTasks(fetchedTasks);
     } catch (err) {
       const errorMessage =

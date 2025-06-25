@@ -42,6 +42,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ```
 npx prisma migrate dev --name init_test // 根据 prisma model 生成sql，操作远程数据库，生成表。本地执行时，由于网络环境问题，可能会出现失败，设置命令行的科学上网，多重试几次，直到成功
 npx prisma generate // 生成prisma 客户端
+
+npx prisma migrate deploy // 前两步骤执行结束后，修改.env文件中的DATABASE_URL，替换为生产环境的数据库，执行此命令，将本地数据库的表同步到远程数据库
 ```
 
 ## 多语言
