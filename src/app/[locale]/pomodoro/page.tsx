@@ -25,21 +25,21 @@ function TaskManagerSkeleton() {
   );
 }
 
-function SkillManagerSkeleton() {
-  return (
-    <Card className="p-4 space-y-4 bg-card/50">
-      <div className="flex justify-between items-center">
-        <Skeleton className="h-6 w-24" />
-        <Skeleton className="h-10 w-24" />
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {[1].map((i) => (
-          <Skeleton key={i} className="h-8 w-24" />
-        ))}
-      </div>
-    </Card>
-  );
-}
+// function SkillManagerSkeleton() {
+//   return (
+//     <Card className="p-4 space-y-4 bg-card/50">
+//       <div className="flex justify-between items-center">
+//         <Skeleton className="h-6 w-24" />
+//         <Skeleton className="h-10 w-24" />
+//       </div>
+//       <div className="flex flex-wrap gap-2">
+//         {[1].map((i) => (
+//           <Skeleton key={i} className="h-8 w-24" />
+//         ))}
+//       </div>
+//     </Card>
+//   );
+// }
 
 export default function PomodoroApp() {
   return (
