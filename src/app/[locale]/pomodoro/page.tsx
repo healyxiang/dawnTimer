@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
 import TaskManagerRSC from "@/components/pomodoro/TaskManager";
-import SkillManagerRSC from "@/components/pomodoro/SkillManager";
+// import SkillManagerRSC from "@/components/pomodoro/SkillManager";
 import StatsManagerRSC from "@/components/pomodoro/StatsManager";
 import TimerManagerRSC from "@/components/pomodoro/TimerManager";
 import { Card } from "@/components/ui/card";
@@ -66,14 +66,15 @@ export default function PomodoroApp() {
           <Suspense fallback={<TaskManagerSkeleton />}>
             <TaskManagerRSC />
           </Suspense>
-          <div className="space-y-4">
+          {/* TODO: 技能管理功能暂时关闭
+           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-center mb-4">
               Skill Management
             </h2>
             <Suspense fallback={<SkillManagerSkeleton />}>
               <SkillManagerRSC />
             </Suspense>
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-8">
