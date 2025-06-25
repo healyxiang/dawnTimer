@@ -5,16 +5,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { TaskNode } from "./TaskNode";
 import { Quadrant } from "./Quadrant";
 import { TaskDialog } from "@/components/pomodoro/TaskManager/TaskDialog";
-import { Skill, Task, QuadrantType } from "@/types/pomodoro";
+import { Task, QuadrantType } from "@/types/pomodoro";
 import useTask from "@/hooks/useTask";
-
-// 模拟技能数据
-const mockSkills: Skill[] = [
-  { id: "1", name: "编程", color: "#3B82F6" },
-  { id: "2", name: "设计", color: "#10B981" },
-  { id: "3", name: "写作", color: "#F59E0B" },
-  { id: "4", name: "管理", color: "#EF4444" },
-];
 
 export const TaskMatrix = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,76 +117,77 @@ export const TaskMatrix = () => {
         )}
 
         {/* 象限网格 */}
-        <div className="flex flex-col gap-1">
-          {/* 第一行 */}
-          <div className="flex gap-1 flex-1 min-h-1/2">
-            <Quadrant
-              quadrant="q1"
-              onDrop={handleMoveTask}
-              onAddTask={handleAddTask}
-              disabled={isLoading}
-            >
-              {tasksByQuadrant.q1.map((task) => (
-                <TaskNode
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDeleteTask}
-                  onEdit={handleEditTask}
-                />
-              ))}
-            </Quadrant>
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-1">
+          {/* 移动端：垂直布局 q1 -> q2 -> q3 -> q4 */}
+          {/* 桌面端：2x2 网格布局 */}
 
-            <Quadrant
-              quadrant="q2"
-              onDrop={handleMoveTask}
-              onAddTask={handleAddTask}
-              disabled={isLoading}
-            >
-              {tasksByQuadrant.q2.map((task) => (
-                <TaskNode
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDeleteTask}
-                  onEdit={handleEditTask}
-                />
-              ))}
-            </Quadrant>
-          </div>
+          {/* Q1 象限 */}
+          <Quadrant
+            quadrant="q1"
+            onDrop={handleMoveTask}
+            onAddTask={handleAddTask}
+            disabled={isLoading}
+          >
+            {tasksByQuadrant.q1.map((task) => (
+              <TaskNode
+                key={task.id}
+                task={task}
+                onDelete={handleDeleteTask}
+                onEdit={handleEditTask}
+              />
+            ))}
+          </Quadrant>
 
-          {/* 第二行 */}
-          <div className="flex gap-1 flex-1 min-h-1/2">
-            <Quadrant
-              quadrant="q3"
-              onDrop={handleMoveTask}
-              onAddTask={handleAddTask}
-              disabled={isLoading}
-            >
-              {tasksByQuadrant.q3.map((task) => (
-                <TaskNode
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDeleteTask}
-                  onEdit={handleEditTask}
-                />
-              ))}
-            </Quadrant>
+          {/* Q2 象限 */}
+          <Quadrant
+            quadrant="q2"
+            onDrop={handleMoveTask}
+            onAddTask={handleAddTask}
+            disabled={isLoading}
+          >
+            {tasksByQuadrant.q2.map((task) => (
+              <TaskNode
+                key={task.id}
+                task={task}
+                onDelete={handleDeleteTask}
+                onEdit={handleEditTask}
+              />
+            ))}
+          </Quadrant>
 
-            <Quadrant
-              quadrant="q4"
-              onDrop={handleMoveTask}
-              onAddTask={handleAddTask}
-              disabled={isLoading}
-            >
-              {tasksByQuadrant.q4.map((task) => (
-                <TaskNode
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDeleteTask}
-                  onEdit={handleEditTask}
-                />
-              ))}
-            </Quadrant>
-          </div>
+          {/* Q3 象限 */}
+          <Quadrant
+            quadrant="q3"
+            onDrop={handleMoveTask}
+            onAddTask={handleAddTask}
+            disabled={isLoading}
+          >
+            {tasksByQuadrant.q3.map((task) => (
+              <TaskNode
+                key={task.id}
+                task={task}
+                onDelete={handleDeleteTask}
+                onEdit={handleEditTask}
+              />
+            ))}
+          </Quadrant>
+
+          {/* Q4 象限 */}
+          <Quadrant
+            quadrant="q4"
+            onDrop={handleMoveTask}
+            onAddTask={handleAddTask}
+            disabled={isLoading}
+          >
+            {tasksByQuadrant.q4.map((task) => (
+              <TaskNode
+                key={task.id}
+                task={task}
+                onDelete={handleDeleteTask}
+                onEdit={handleEditTask}
+              />
+            ))}
+          </Quadrant>
         </div>
 
         {/* TaskDialog */}
@@ -205,7 +198,7 @@ export const TaskMatrix = () => {
             setEditingTask(undefined);
           }}
           onSubmit={handleSubmitTask}
-          skills={mockSkills}
+          skills={[]}
           task={
             editingTask
               ? {

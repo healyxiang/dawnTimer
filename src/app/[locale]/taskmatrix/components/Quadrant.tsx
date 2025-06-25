@@ -49,13 +49,13 @@ export const Quadrant = ({
                  ${isOver ? "border-opacity-100" : "border-opacity-50"}`}
     >
       {/* 象限标题和添加按钮 */}
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center gap-1s mb-2">
         <h3
           className={`font-semibold text-lg ${
             quadrantColors[quadrant as keyof typeof quadrantColors]
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:flex-col">
             <div className="text-gray-500 dark:text-gray-400">
               {QUADRANT_TITLES[quadrant as keyof typeof QUADRANT_TITLES].title}
             </div>

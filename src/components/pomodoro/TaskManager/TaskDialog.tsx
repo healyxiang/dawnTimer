@@ -78,6 +78,7 @@ export function TaskDialog({
 
   // 当任务数据变化时，更新表单值
   useEffect(() => {
+    console.log("skills:", skills);
     if (task) {
       form.reset({
         title: task.title,
@@ -151,6 +152,9 @@ export function TaskDialog({
               )}
             />
 
+            {/**TODO: 临时注释掉任务备注*/}
+            {/**
+             * 
             <FormField
               control={form.control}
               name="description"
@@ -170,7 +174,10 @@ export function TaskDialog({
                 </FormItem>
               )}
             />
+            */}
 
+            {/* TODO: 技能管理功能暂时关闭 */}
+            {/*
             <FormField
               control={form.control}
               name="skillIds"
@@ -207,7 +214,7 @@ export function TaskDialog({
                 </FormItem>
               )}
             />
-
+            */}
             <FormField
               control={form.control}
               name="quadrant"

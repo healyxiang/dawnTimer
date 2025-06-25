@@ -5,7 +5,6 @@ export { TaskManager };
 
 export default async function TaskManagerRSC() {
   const tasks = await getTasksByDB();
-  console.log("tasks tasks:", tasks);
 
   return (
     <TaskManager
