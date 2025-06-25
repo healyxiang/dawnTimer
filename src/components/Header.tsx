@@ -6,7 +6,6 @@ import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
 import { ModeToggle } from "@/components/ThemeSwitch";
 import UserBtn from "@/components/UserBtn";
-// import Logo from ''
 // import LocaleSwitch from "@/components/LocaleSwitch";
 // import ThemeSwitch from "./ThemeSwitch";
 // import SearchButton from './SearchButton'
@@ -67,13 +66,13 @@ const Header = () => {
           )}
         >
           {headerNavLinks
-            // .filter((link) => link.href !== '/')
+            .filter((link) => link.href !== "/")
             .map((link) => (
               <Link
                 key={link.title}
                 href={link.href}
                 className={cn(
-                  "m-1 block font-medium text-gray-900 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
+                  "m-1 block font-medium text-gray-900 hover:text-primary dark:text-gray-100 dark:hover:text-primary"
                 )}
               >
                 {link.title}

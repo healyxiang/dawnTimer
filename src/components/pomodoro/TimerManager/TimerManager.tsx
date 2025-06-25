@@ -300,8 +300,6 @@ export function TimerManager() {
     removeTimerLeftFromPageTitle();
   }, [clearTimer, getTimeForMode, updateTimeLeft]);
 
-  console.log(" currentPreset in timer::", currentPreset);
-
   return (
     <Card className="w-full max-w-2xl p-6 space-y-6 relative bg-gradient-to-br from-background to-muted shadow-lg">
       <div className="flex items-center justify-between gap-2">

@@ -15,6 +15,7 @@ type Props = {
 export default function Home({ params }: Props) {
   const { locale } = use(params);
   console.log("locale in page", locale);
+  console.log("ENV FILE ENVIRONMENT:", process.env.ENV_FILE_ENVIRONMENT);
 
   setRequestLocale(locale);
   return (

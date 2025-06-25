@@ -1,18 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Task, Skill } from "@/types/pomodoro";
 import { Check, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getTasks } from "@/service/pomodoro";
 import { TaskDialog } from "./TaskDialog";
-import { addTask, updateTask, deleteTask } from "@/service/pomodoro";
 import { useCurrentTaskStore } from "@/store/currentTask";
+import useTask from "@/hooks/useTask";
 
 interface TaskManagerProps {
   tasks: Task[];
@@ -20,57 +17,42 @@ interface TaskManagerProps {
 }
 
 export function TaskManager({ tasks: initialTasks, skills }: TaskManagerProps) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState<string>("all");
   const { currentTask, setCurrentTask } = useCurrentTaskStore();
+
+  // Use the task hook for CRUD operations
+  const { tasks, isLoading, error, addTask, completeTask, deleteTask } =
+    useTask({
+      initialTasks,
+      autoFetch: initialTasks.length === 0,
+    });
 
   const handleAddTask = async (
     task: Omit<Task, "id" | "pomodoroRatings" | "createdAt" | "updatedAt">
   ) => {
     try {
-      const newTask = await addTask(task);
-      setTasks((prev) => [...prev, newTask]);
-      toast.success("Task added successfully");
+      await addTask(task);
+      setIsDialogOpen(false);
     } catch (error) {
-      toast.error("Failed to add task");
-      console.error("Error adding task:", error);
+      // Error is already handled in the hook
+      console.error("Error in handleAddTask:", error);
     }
   };
 
   const handleCompleteTask = async (taskId: string) => {
     try {
-      const task = tasks.find((t) => t.id === taskId);
-      if (task) {
-        const updatedTask = await updateTask(taskId, {
-          completed: !task.completed,
-        });
-        if (updatedTask) {
-          setTasks((prev) =>
-            prev.map((t) => (t.id === taskId ? updatedTask : t))
-          );
-          if (currentTask?.id === taskId && updatedTask.completed) {
-            setCurrentTask(undefined);
-          }
-        }
-      }
+      await completeTask(taskId);
     } catch (error) {
-      toast.error("Failed to update task");
-      console.error("Error updating task:", error);
+      console.error("Error in handleCompleteTask:", error);
     }
   };
 
   const handleDeleteTask = async (taskId: string) => {
     try {
       await deleteTask(taskId);
-      setTasks((prev) => prev.filter((task) => task.id !== taskId));
-      if (currentTask?.id === taskId) {
-        setCurrentTask(undefined);
-      }
-      toast.success("Task deleted successfully");
     } catch (error) {
-      toast.error("Failed to delete task");
-      console.error("Error deleting task:", error);
+      console.error("Error in handleDeleteTask:", error);
     }
   };
 
@@ -85,17 +67,6 @@ export function TaskManager({ tasks: initialTasks, skills }: TaskManagerProps) {
     if (selectedTaskType === "all") return true;
     return task.completed === (selectedTaskType === "completed");
   });
-
-  useEffect(() => {
-    if (initialTasks.length === 0) {
-      // 服务端没有数据，前端从接口获取，未登录用户使用本地数据
-      const fetchTasks = async () => {
-        const tasks = await getTasks();
-        setTasks(tasks);
-      };
-      fetchTasks();
-    }
-  }, [initialTasks.length]);
 
   return (
     <Card className="p-4 space-y-4 bg-card/50">
@@ -128,6 +99,20 @@ export function TaskManager({ tasks: initialTasks, skills }: TaskManagerProps) {
           Add Task
         </Button>
       </div>
+
+      {/* Error display */}
+      {error && (
+        <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* Loading state */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      )}
 
       <div className="space-y-1">
         {filteredTasks.map((task) => (

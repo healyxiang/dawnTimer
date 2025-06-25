@@ -1,4 +1,5 @@
 "use client";
+import { memo } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,14 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-export default function UserBtn() {
-  const { data: session } = useSession({ required: false });
+const UserBtn = memo(() => {
+  const { data: session } = useSession({
+    required: false,
+    onUnauthenticated() {
+      // The user is not authenticated, handle it here.
+      console.log("onUnauthenticated");
+    },
+  });
   const userImg = session?.user?.image;
   console.log("session in UserBtn:", session);
 
@@ -45,4 +52,8 @@ export default function UserBtn() {
       Sign in
     </Button>
   );
-}
+});
+
+UserBtn.displayName = "UserBtn";
+
+export default UserBtn;

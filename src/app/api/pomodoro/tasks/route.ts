@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       return apiResponses.badRequest("User did not login");
     }
     const body = await request.json();
-    const { title, description, skillIds } = body;
+    const { title, description, skillIds, quadrant, completed } = body;
 
     if (!title) {
       return apiResponses.badRequest("Title is required");
@@ -32,6 +32,8 @@ export async function POST(request: Request) {
     const taskData: Prisma.TaskCreateInput = {
       title,
       description,
+      quadrant,
+      completed: completed || false,
       user: { connect: { id: user.id } },
       ...(skillIds &&
         skillIds.length > 0 && {
@@ -49,6 +51,7 @@ export async function POST(request: Request) {
             id: true,
             name: true,
             description: true,
+            color: true,
           },
         },
       },
@@ -69,7 +72,7 @@ export async function PUT(request: Request) {
       return apiResponses.badRequest("User did not login");
     }
     const body = await request.json();
-    const { id, title, description, skillId, presetId, completed } = body;
+    const { id, title, description, skillIds, quadrant, completed } = body;
 
     if (!id) {
       return apiResponses.badRequest("Task ID is required");
@@ -78,9 +81,15 @@ export async function PUT(request: Request) {
     const taskData: Prisma.TaskUpdateInput = {
       title,
       description,
+      quadrant,
       completed,
-      ...(skillId && { skill: { connect: { id: skillId } } }),
-      ...(presetId && { preset: { connect: { id: presetId } } }),
+      ...(skillIds &&
+        skillIds.length > 0 && {
+          skills: {
+            set: [], // 清除现有关联
+            connect: skillIds.map((id: string) => ({ id })),
+          },
+        }),
     };
 
     const task = await prisma.task.update({
@@ -89,6 +98,16 @@ export async function PUT(request: Request) {
         userId: user.id,
       },
       data: taskData,
+      include: {
+        skills: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            color: true,
+          },
+        },
+      },
     });
 
     return successResponse(task, "Task updated successfully");
