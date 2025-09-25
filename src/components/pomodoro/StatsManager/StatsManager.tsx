@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
+import { RefreshCcwIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skill, TimerRecord } from "@/types/pomodoro";
 import { DateRange } from "react-day-picker";
@@ -75,12 +77,15 @@ export function StatsManager({
         onDateRangeChange={setDateRange}
         timerRecords={timerRecords}
       />
+
       <Tabs defaultValue="dashboard" className="w-full gap-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
-
+        <Button onClick={fetchBaseData}>
+          <RefreshCcwIcon className="w-4 h-4" />
+        </Button>
         <TabsContent value="dashboard">
           <TimerStats
             timerRecords={filteredRecords}
