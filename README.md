@@ -46,6 +46,67 @@ npx prisma generate // 生成prisma 客户端
 npx prisma migrate deploy // 前两步骤执行结束后，修改.env文件中的DATABASE_URL，替换为生产环境的数据库，执行此命令，将本地数据库的表同步到远程数据库
 ```
 
+### 数据库连接问题排查
+
+如果遇到 `Can't reach database server` 错误，请按以下步骤排查：
+
+1. **测试数据库连接**
+
+   ```bash
+   pnpm test:db
+   # 或
+   node scripts/test-db-connection.mjs
+   ```
+
+2. **检查环境变量配置**
+
+   - 确认 `.env` 或 `.env.local` 文件中存在 `DATABASE_URL`
+   - 检查 `DATABASE_URL` 格式是否正确：
+     ```
+     postgresql://用户名:密码@主机:端口/数据库名?参数
+     ```
+   - 注意：`.env.local` 的优先级高于 `.env`
+
+3. **常见问题及解决方案**
+
+   **问题 1: 数据库服务器不可达**
+
+   - Railway 数据库：检查 Railway 控制台中的数据库状态和连接信息
+   - 确认数据库服务是否正在运行
+   - 检查网络连接（可能需要 VPN 或代理）
+
+   **问题 2: 连接字符串错误**
+
+   - 确认主机地址、端口、数据库名是否正确
+   - 检查用户名和密码是否正确
+   - 注意特殊字符需要进行 URL 编码
+
+   **问题 3: 网络问题**
+
+   - 如果使用 Railway 等云数据库，可能需要配置代理
+   - 检查防火墙设置
+   - 尝试使用 `npx prisma db pull` 测试连接
+
+   **问题 4: 数据库服务已停止或迁移**
+
+   - Railway 免费服务可能会暂停，需要重新启动
+   - 检查数据库服务提供商的控制台
+
+4. **获取最新的连接信息**
+
+   - Railway: 在项目控制台 → Database → Connect 中查看最新的连接字符串
+   - 其他服务商: 查看相应的数据库管理界面
+
+5. **验证连接字符串格式**
+
+   ```bash
+   # 检查环境变量是否已加载
+   echo $DATABASE_URL
+
+   # 或在 Node.js 中测试
+   node -e "console.log(process.env.DATABASE_URL)"
+   ```
+
 ## 多语言
 
 使用了 `next-intl` 实现多语言支持
@@ -63,3 +124,21 @@ npx prisma migrate deploy // 前两步骤执行结束后，修改.env文件中�
 `contentlayer.config.ts` 是 `contentlayer` 的配置文件，用于配置博客页面内容,每次新增语言时，需要修改此配置文件
 
 `src/app/[locale]/blog/page.tsx` 是博客页面，使用 `next-intl` 实现多语言支持，使用 `contentlayer` 生成博客页面内容
+
+## 环境变量
+
+### [优先级顺序](https://nextjs.org/docs/app/guides/environment-variables#environment-variable-load-order)
+
+环境变量查找优先级顺序，一旦找到变量，则不再继续查找：
+
+1. `process.env`
+2. `.env.$(NODE_ENV).local`
+3. `.env.local` (Not checked when NODE_ENV is test.)
+4. `.env.$(NODE_ENV)`
+5. `.env`
+
+## 登录授权
+
+### Github
+
+https://juejin.cn/post/6998348587797053447

@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env INIT_CWD=$PWD next dev --turbopack",
+    "dev": "cross-env INIT_CWD=$PWD next dev",
+    "dev:turbo": "cross-env INIT_CWD=$PWD next dev --turbopack",
     "build": "npm run prisma:generate && npm run build:content && next build",
     "start": "next start",
     "lint": "next lint",
     "prisma:generate": "npx prisma generate",
     "build:content": "contentlayer build",
     "migrate:prod": "dotenv -e .env.prod -- npx prisma migrate deploy",
-    "migrate:dev": "dotenv -e .env.local -- npx prisma migrate deploy"
+    "migrate:dev": "dotenv -e .env.local -- npx prisma migrate deploy",
+    "test:db": "node scripts/test-db-connection.mjs"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.6.0",
