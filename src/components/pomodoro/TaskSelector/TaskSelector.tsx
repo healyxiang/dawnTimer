@@ -16,7 +16,8 @@ interface TaskSelectorProps {
 type QuadrantFilter = QuadrantType | "all";
 
 export function TaskSelector({ tasks }: TaskSelectorProps) {
-  const { currentTask, setCurrentTask } = useCurrentTaskStore();
+  const currentTask = useCurrentTaskStore((state) => state.currentTask);
+  const setCurrentTask = useCurrentTaskStore((state) => state.setCurrentTask);
   const [selectedQuadrant, setSelectedQuadrant] =
     useState<QuadrantFilter>("all");
 

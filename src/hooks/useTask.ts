@@ -67,7 +67,8 @@ export default function useTask(options: UseTaskOptions = {}): UseTaskReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { currentTask, setCurrentTask } = useCurrentTaskStore();
+  const currentTask = useCurrentTaskStore((state) => state.currentTask);
+  const setCurrentTask = useCurrentTaskStore((state) => state.setCurrentTask);
 
   // Fetch tasks from API
   const fetchTasks = useCallback(async () => {

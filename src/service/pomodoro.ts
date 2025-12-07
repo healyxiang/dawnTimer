@@ -1,4 +1,5 @@
 // 客户端 api请求
+import useSWR from "swr";
 import {
   Task,
   Skill,
@@ -187,7 +188,51 @@ export const deleteSkill = async (skillId: string): Promise<void> => {
   }
 };
 
-// Timer Settings
+// Timer Settings fetcher for SWR
+const timerSettingsFetcher = async (): Promise<TimerPreset> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
+  const response = await fetch("/api/pomodoro/presets");
+  const result = await response.json();
+  if (result.code === 200) {
+    const presets = result.data;
+    const currentPreset = presets[0];
+    return {
+      ...currentPreset,
+      pomodoroLength: currentPreset.pomodoroLength,
+      shortBreakLength: currentPreset.shortBreakLength,
+      longBreakLength: currentPreset.longBreakLength,
+      autoStartBreaks: false,
+      autoStartPomodoros: false,
+      longBreakInterval: 4,
+    };
+  }
+  throw new Error(result.message);
+};
+
+// SWR hook for timer settings
+export const useTimerSettings = () => {
+  const { data, error, isLoading, mutate } = useSWR<TimerPreset>(
+    "/api/pomodoro/presets",
+    timerSettingsFetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
+    }
+  );
+
+  return {
+    preset: data,
+    isLoading,
+    isError: error,
+    mutate,
+  };
+};
+
+// Timer Settings (legacy)
 export const getTimerSettings = async (): Promise<TimerPreset> => {
   const user = await getUser();
   if (!user) {
