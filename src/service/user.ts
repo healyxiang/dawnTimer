@@ -1,15 +1,7 @@
 import { getSession } from "next-auth/react";
-import { localStorageUtils, LocalUser } from "@/lib/localStorage";
 import { User } from "@prisma/client";
 
-export type UserType = User | LocalUser | null;
-
-{
-  /**
- TODO: 这里还需要完善，如何解决判断未登录就使用localStorage中的临时用户，
- 登录了使用登录用户信息。并且避免重复请求获取用户信息。
-  */
-}
+export type UserType = User | null;
 
 // 简单的 session 缓存
 let sessionCache: unknown = null;
@@ -21,7 +13,7 @@ let pendingGetSession: Promise<unknown> | null = null;
 
 export const getUser = async (): Promise<UserType> => {
   try {
-    // 1. 尝试从 next-auth session 获取用户
+    // 从 next-auth session 获取用户
     console.log("call getUser");
 
     // 检查 session 缓存
@@ -69,20 +61,12 @@ export const getUser = async (): Promise<UserType> => {
       return sessionWithUser.user as User;
     }
 
-    // 2. 尝试从 localStorage 获取本地用户
-    const localUser = localStorageUtils.getLocalUser();
-    if (localUser) {
-      return localUser;
-    }
-
-    // 3. 如果都没有，创建新的本地用户
-    return localStorageUtils.createLocalUser();
+    // 未登录返回 null
+    return null;
   } catch (error) {
     console.error("Error getting user:", error);
-    // 如果出错，返回本地用户
-    return (
-      localStorageUtils.getLocalUser() || localStorageUtils.createLocalUser()
-    );
+    // 如果出错，返回 null（必须登录）
+    return null;
   }
 };
 
@@ -93,29 +77,8 @@ export const clearSessionCache = (): void => {
   pendingGetSession = null; // 同时清除 pending 请求
 };
 
-// 更新用户信息
-export const updateUser = async (
-  updates: Partial<LocalUser>
-): Promise<UserType> => {
-  const user = await getUser();
-
-  if (user?.hasOwnProperty("isLocalUser")) {
-    const updatedUser = { ...user, ...updates } as LocalUser;
-    localStorageUtils.setLocalData("local_user", updatedUser);
-    return updatedUser;
-  }
-
-  return user;
-};
-
-// 清除用户数据
+// 清除 session 缓存（用于登出等场景）
 export const clearUserData = async (): Promise<void> => {
-  const user = await getUser();
-
-  if (user?.hasOwnProperty("isLocalUser")) {
-    localStorageUtils.clearAllLocalData();
-  }
-
   // 清除 session 缓存
   clearSessionCache();
 };

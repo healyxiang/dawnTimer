@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -11,8 +12,7 @@ import { NonUndefined } from "@/types/common";
 import { TimerStats } from "./TimerStats";
 import { HistoryStats } from "./HistoryStats";
 import { DateManager } from "./DateManager";
-import { getUser } from "@/service/user";
-import { getSkills, getTimerRecords } from "@/service/pomodoro";
+import { getTimerRecords } from "@/service/pomodoro";
 
 interface StatsManagerProps {
   // tasks: Task[];
@@ -29,7 +29,7 @@ export function StatsManager({
   initialSkills,
   initialTimerRecords,
 }: StatsManagerProps) {
-  const [skills, setSkills] = useState<Skill[]>(initialSkills);
+  const [skills, _] = useState<Skill[]>(initialSkills);
   const [timerRecords, setTimerRecords] =
     useState<TimerRecord[]>(initialTimerRecords);
   const [dateRange, setDateRange] = useState<DateRangeRequired>({
@@ -44,30 +44,25 @@ export function StatsManager({
   });
 
   const fetchBaseData = useCallback(async () => {
-    const user = await getUser();
-    const isLocalUser = user?.hasOwnProperty("isLocalUser");
-    if (!isLocalUser) {
-      return;
+    try {
+      const timerRecords = await getTimerRecords();
+      console.log("timerRecords timerRecords:", timerRecords);
+      setTimerRecords(timerRecords);
+    } catch (error) {
+      console.error("Error fetching base data:", error);
+      // 如果未登录，可以选择显示错误信息或重定向到登录页
     }
-    const [skills, timerRecords] = await Promise.all([
-      getSkills(),
-      getTimerRecords(),
-    ]);
-    console.log("timerRecords timerRecords:", timerRecords);
-    setSkills(skills);
-    setTimerRecords(timerRecords);
   }, []);
 
   useEffect(() => {
     fetchBaseData();
-    console.log("skills::", skills);
-  }, []);
+  }, [fetchBaseData]);
 
   useEffect(() => {
     if (dateRange) {
       fetchBaseData();
     }
-  }, [dateRange]);
+  }, [dateRange, fetchBaseData]);
 
   return (
     <Card className="p-6 space-y-6 bg-card/50">
