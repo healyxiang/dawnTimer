@@ -1,4 +1,5 @@
 // 客户端 api请求
+import useSWR from "swr";
 import {
   Task,
   Skill,
@@ -8,8 +9,6 @@ import {
   TimerPresetWithoutNameAndCreatedAt,
 } from "@/types/pomodoro";
 import { BaseModel } from "@/types/common";
-import { DEFAULT_PRESETS } from "@/constants/pomodoro";
-import { localStorageUtils } from "@/lib/localStorage";
 import { getUser } from "./user";
 
 // 通用的数据获取函数
@@ -19,15 +18,11 @@ const fetchData = async <T extends BaseModel>(
   body?: Record<string, unknown>
 ): Promise<T[]> => {
   const user = await getUser();
-  const isLocalUser = user?.hasOwnProperty("isLocalUser");
-
-  // 如果是本地用户，从 localStorage 获取数据
-  if (isLocalUser) {
-    const localData = localStorageUtils.getLocalData<T[]>(endpoint);
-    return localData || [];
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
   }
 
-  // 如果是登录用户，从 API 获取数据
+  // 从 API 获取数据
   try {
     const response = await fetch(`/api/pomodoro/${endpoint}`, {
       method,
@@ -43,7 +38,7 @@ const fetchData = async <T extends BaseModel>(
     throw new Error(result.message);
   } catch (error) {
     console.error(`Error fetching ${endpoint}:`, error);
-    return [];
+    throw error;
   }
 };
 
@@ -54,42 +49,11 @@ const saveData = async <T extends BaseModel>(
   method: string = "POST"
 ): Promise<T | null> => {
   const user = await getUser();
-  const isLocalUser = user?.hasOwnProperty("isLocalUser");
-
-  // 如果是本地用户，保存到 localStorage
-  if (isLocalUser) {
-    // 获取现有数据
-    const existingData = localStorageUtils.getLocalData<T[]>(endpoint) || [];
-
-    if (method === "POST") {
-      // 添加新数据
-      const newItem = {
-        ...data,
-        id: `local_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      } as unknown as T;
-      const newData = [...existingData, newItem];
-      localStorageUtils.setLocalData(endpoint, newData);
-      return newItem;
-    } else if (method === "PUT" && data.id) {
-      // 更新现有数据
-      const updatedData = existingData.map((item) =>
-        item.id === data.id
-          ? {
-              ...item,
-              ...data,
-              updatedAt: new Date().toISOString(),
-            }
-          : item
-      );
-      localStorageUtils.setLocalData(endpoint, updatedData);
-      return updatedData.find((item) => item.id === data.id) || null;
-    }
-    return null;
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
   }
 
-  // 如果是登录用户，保存到 API
+  // 保存到 API
   try {
     const response = await fetch(`/api/pomodoro/${endpoint}`, {
       method,
@@ -105,7 +69,7 @@ const saveData = async <T extends BaseModel>(
     throw new Error(result.message);
   } catch (error) {
     console.error(`Error saving ${endpoint}:`, error);
-    return null;
+    throw error;
   }
 };
 
@@ -122,11 +86,8 @@ export const addTimerRecord = async (
 
 export const clearTimerRecords = async (): Promise<void> => {
   const user = await getUser();
-  const isLocalUser = user?.hasOwnProperty("isLocalUser");
-
-  if (isLocalUser) {
-    localStorageUtils.clearLocalData("records");
-    return;
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
   }
 
   try {
@@ -167,13 +128,8 @@ export const updateTask = async (
 
 export const deleteTask = async (taskId: string): Promise<void> => {
   const user = await getUser();
-  const isLocalUser = user?.hasOwnProperty("isLocalUser");
-
-  if (isLocalUser) {
-    const tasks = await getTasks();
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
-    localStorageUtils.setLocalData("tasks", updatedTasks);
-    return;
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
   }
 
   try {
@@ -214,13 +170,8 @@ export const updateSkill = async (
 
 export const deleteSkill = async (skillId: string): Promise<void> => {
   const user = await getUser();
-  const isLocalUser = user?.hasOwnProperty("isLocalUser");
-
-  if (isLocalUser) {
-    const skills = await getSkills();
-    const updatedSkills = skills.filter((skill) => skill.id !== skillId);
-    localStorageUtils.setLocalData("skills", updatedSkills);
-    return;
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
   }
 
   try {
@@ -237,18 +188,55 @@ export const deleteSkill = async (skillId: string): Promise<void> => {
   }
 };
 
-// Timer Settings
+// Timer Settings fetcher for SWR
+const timerSettingsFetcher = async (): Promise<TimerPreset> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
+  const response = await fetch("/api/pomodoro/presets");
+  const result = await response.json();
+  if (result.code === 200) {
+    const presets = result.data;
+    const currentPreset = presets[0];
+    return {
+      ...currentPreset,
+      pomodoroLength: currentPreset.pomodoroLength,
+      shortBreakLength: currentPreset.shortBreakLength,
+      longBreakLength: currentPreset.longBreakLength,
+      autoStartBreaks: false,
+      autoStartPomodoros: false,
+      longBreakInterval: 4,
+    };
+  }
+  throw new Error(result.message);
+};
+
+// SWR hook for timer settings
+export const useTimerSettings = () => {
+  const { data, error, isLoading, mutate } = useSWR<TimerPreset>(
+    "/api/pomodoro/presets",
+    timerSettingsFetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
+    }
+  );
+
+  return {
+    preset: data,
+    isLoading,
+    isError: error,
+    mutate,
+  };
+};
+
+// Timer Settings (legacy)
 export const getTimerSettings = async (): Promise<TimerPreset> => {
   const user = await getUser();
-  const isLocalUser = user?.hasOwnProperty("isLocalUser");
-
-  if (isLocalUser) {
-    const localSettings =
-      localStorageUtils.getLocalData<TimerPreset>("settings");
-    if (localSettings) {
-      return localSettings;
-    }
-    return DEFAULT_PRESETS[0];
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
   }
 
   try {
@@ -272,13 +260,18 @@ export const getTimerSettings = async (): Promise<TimerPreset> => {
     throw new Error(result.message);
   } catch (error) {
     console.error("Error fetching timer settings:", error);
-    return DEFAULT_PRESETS[0];
+    throw error;
   }
 };
 
 export const updateTimerSettings = async (
   settings: TimerSettings
 ): Promise<void> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     const lastPresetId = await getLastPresetId();
     const response = await fetch("/api/pomodoro/presets", {
@@ -305,6 +298,11 @@ export const updateTimerSettings = async (
 
 // Timer Presets
 export const getTimerPresets = async (): Promise<TimerPreset[]> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     const response = await fetch("/api/pomodoro/presets");
     const result = await response.json();
@@ -314,13 +312,18 @@ export const getTimerPresets = async (): Promise<TimerPreset[]> => {
     throw new Error(result.message);
   } catch (error) {
     console.error("Error fetching timer presets:", error);
-    return DEFAULT_PRESETS;
+    throw error;
   }
 };
 
 export const addTimerPreset = async (
   preset: Omit<TimerPreset, "createdAt" | "updatedAt">
 ): Promise<TimerPreset> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     const response = await fetch("/api/pomodoro/presets", {
       method: "POST",
@@ -349,6 +352,11 @@ export const addTimerPreset = async (
 };
 
 export const deleteTimerPreset = async (presetId: string): Promise<void> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     const response = await fetch(`/api/pomodoro/presets?id=${presetId}`, {
       method: "DELETE",
@@ -365,6 +373,11 @@ export const deleteTimerPreset = async (presetId: string): Promise<void> => {
 
 // 获取和设置最后使用的预设ID
 export const getLastPresetId = async (): Promise<string> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     const response = await fetch("/api/pomodoro/presets");
     const result = await response.json();
@@ -376,11 +389,16 @@ export const getLastPresetId = async (): Promise<string> => {
     throw new Error(result.message);
   } catch (error) {
     console.error("Error getting last preset ID:", error);
-    return "classic";
+    throw error;
   }
 };
 
 export const setLastPresetId = async (presetId: string): Promise<void> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     const response = await fetch("/api/pomodoro/presets", {
       method: "PUT",
@@ -408,17 +426,8 @@ export const updateTimerPreset = async (
 ): Promise<TimerPreset | null> => {
   try {
     const user = await getUser();
-    const isLocalUser = user?.hasOwnProperty("isLocalUser");
-
-    if (isLocalUser) {
-      const newPreset: TimerPreset = {
-        ...preset,
-        id: preset?.id || "classic",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      localStorageUtils.setLocalData("settings", newPreset);
-      return newPreset;
+    if (!user) {
+      throw new Error("用户未登录，请先登录");
     }
 
     const presetId = preset.id;
@@ -443,7 +452,7 @@ export const updateTimerPreset = async (
     throw new Error(result.message);
   } catch (error) {
     console.error("Error updating timer preset:", error);
-    return null;
+    throw error;
   }
 };
 
@@ -451,6 +460,11 @@ export const updateTimerPreset = async (
 export const updateCurrentPreset = async (
   newPreset: TimerPresetWithoutNameAndCreatedAt
 ): Promise<TimerPreset | null> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     const response = await fetch("/api/pomodoro/presets", {
       method: "PUT",
@@ -475,12 +489,17 @@ export const updateCurrentPreset = async (
     throw new Error(result.message);
   } catch (error) {
     console.error("Error updating current preset:", error);
-    return null;
+    throw error;
   }
 };
 
 // Batch operations
 export const clearAllData = async (): Promise<void> => {
+  const user = await getUser();
+  if (!user) {
+    throw new Error("用户未登录，请先登录");
+  }
+
   try {
     await Promise.all([
       clearTimerRecords(),

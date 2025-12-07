@@ -56,7 +56,7 @@ const MobileNav = () => {
         </svg>
       </button>
       <Transition appear show={navShow} as={Fragment} unmount={false}>
-        <Dialog as="div" onClose={onToggleNav} unmount={false}>
+        <Dialog onClose={onToggleNav} unmount={false}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"

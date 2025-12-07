@@ -19,7 +19,8 @@ interface TaskManagerProps {
 export function TaskManager({ tasks: initialTasks, skills }: TaskManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState<string>("all");
-  const { currentTask, setCurrentTask } = useCurrentTaskStore();
+  const currentTask = useCurrentTaskStore((state) => state.currentTask);
+  const setCurrentTask = useCurrentTaskStore((state) => state.setCurrentTask);
 
   // Use the task hook for CRUD operations
   const { tasks, isLoading, error, addTask, completeTask, deleteTask } =
