@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useDeviceStore } from "@/store/device";
 
@@ -11,6 +11,20 @@ const Child1 = memo(function () {
 });
 
 Child1.displayName = "Child1";
+
+const Child3 = memo(function ({ deviceId }: { deviceId: string }) {
+  //   const deviceList = useDeviceStore((state) => state.devicesArr);
+  const device = useDeviceStore((state) =>
+    state.devicesArr.find((device) => device.id === deviceId)
+  );
+  //   const device = useMemo(() => {
+  //     return deviceList.find((device) => device.id === deviceId);
+  //   }, [deviceList, deviceId]);
+  console.log("render in  Child3", device);
+  return <div>Child3: {device?.name}</div>;
+});
+
+Child3.displayName = "Child3";
 
 function useCompare<T>(
   selector: (state: any) => T,
@@ -57,8 +71,11 @@ const Child2 = memo(function ({ deviceId }: { deviceId: string }) {
 Child1.displayName = "Child2";
 
 export default function ZustandPage() {
+  //   const deviceIds = useDeviceStore(
+  //     useShallow((state) => Object.keys(state.devices))
+  //   );
   const deviceIds = useDeviceStore(
-    useShallow((state) => Object.keys(state.devices))
+    useShallow((state) => state.devicesArr.map((device) => device.id))
   );
   //   const deviceIds = useDeviceStore((state) => state.deviceIds);
   const setDevice = useDeviceStore((state) => state.setDevice);
@@ -72,7 +89,7 @@ export default function ZustandPage() {
   //     setSelectedDeviceIds(["1", "2"]);
   //   }, []);
   //   console.log("devices", deviceIds);
-  console.log("deviceIds", deviceIds);
+  console.log("deviceIds render in page:", deviceIds);
   //   console.log("selectedDeviceIds", selectedDeviceIds);
 
   return (
@@ -116,6 +133,7 @@ export default function ZustandPage() {
       </button>
       <Child1 />
       <Child2 deviceId="5" />
+      <Child3 deviceId="5" />
       {/* <button onClick={() => setDeviceIds(["1", "2", "3"])}>Set Device IDs</button>
     <button onClick={() => setSelectedDeviceIds(["1", "2"])}>Set Selected Device IDs</button> */}
     </div>
